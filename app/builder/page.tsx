@@ -76,6 +76,8 @@ export default function BuilderPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState("");
+  const [aiError, setAiError] = useState("");
+  const [shareError, setShareError] = useState("");
   const [showUpsell, setShowUpsell] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isPro, setIsPro] = useState(false);
@@ -146,9 +148,12 @@ export default function BuilderPage() {
         }));
         setInvoice((prev) => ({ ...prev, items: newItems }));
         setAiPrompt("");
+        setAiError("");
+      } else if (data.error) {
+        setAiError(data.error);
       }
     } catch {
-      alert("AI suggestion failed. Make sure Ollama is running locally on port 11434.");
+      setAiError("AI suggestion failed. Make sure Ollama is running locally on port 11434.");
     } finally {
       setAiLoading(false);
     }
@@ -189,6 +194,7 @@ export default function BuilderPage() {
   };
 
   const copyShareLink = async () => {
+    setShareError("");
     const data = btoa(JSON.stringify(invoice));
     const url = `${window.location.origin}/i/${data}`;
     try {
@@ -196,7 +202,7 @@ export default function BuilderPage() {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch {
-      alert("Copy the URL from the address bar");
+      setShareError(`Share URL: ${url}`);
     }
   };
 
@@ -245,6 +251,18 @@ export default function BuilderPage() {
       {pdfError && (
         <div className="mx-6 mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {pdfError}
+        </div>
+      )}
+
+      {aiError && (
+        <div className="mx-6 mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {aiError}
+        </div>
+      )}
+
+      {shareError && (
+        <div className="mx-6 mt-4 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
+          {shareError}
         </div>
       )}
 
