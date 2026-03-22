@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow API routes from indexing
+Disallow: /api/
+Disallow: /builder
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /success
