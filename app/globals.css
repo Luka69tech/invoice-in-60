@@ -36,3 +36,9 @@
     @apply text-xs font-semibold uppercase tracking-widest text-brand-600;
   }
 }
+
+/* Dark checkout modal styles */
+.bg-slate-750 {
+  background-color: #1e293b;
+}
+
