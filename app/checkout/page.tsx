@@ -14,10 +14,11 @@ import {
   ShieldCheck,
   ChevronRight,
   Zap,
-  Sparkles,
   Clock3,
   RefreshCw,
+  CircleDot,
 } from "lucide-react";
+import { usePrices } from "@/lib/hooks/usePrices";
 
 const PRICE_IN_USD = 29;
 
@@ -184,24 +185,6 @@ const QR_SCHEMES: Record<string, (addr: string, amount: number) => string> = {
   ADA: (a, amt) => `cardano:${a}?amount=${amt}`,
 };
 
-const COINGECKO_IDS: Record<string, string> = {
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  SOL: "solana",
-  BNB: "binancecoin",
-  USDT: "tether",
-  USDC: "usd-coin",
-  MATIC: "matic-network",
-  AVAX: "avalanche-2",
-  TRX: "tron",
-  TON: "the-open-network",
-  XRP: "ripple",
-  DOGE: "dogecoin",
-  LTC: "litecoin",
-  ADA: "cardano",
-  ALGO: "algorand",
-};
-
 type CoinEntry = (typeof COIN_CATEGORIES)[number]["coins"][number];
 type NetworkEntry = { id: string; name: string; shortName: string; icon: string };
 
@@ -209,15 +192,6 @@ function getWalletAddress(id: string): string {
   const addr = process.env[`NEXT_PUBLIC_CRYPTO_${id.toUpperCase().replace(/-/g, "_")}`];
   if (!addr || addr.startsWith("YOUR_")) return "";
   return addr;
-}
-
-function formatCrypto(amount: number, symbol: string): string {
-  if (amount === 0) return "—";
-  if (amount < 0.00001) return `${amount.toExponential(2)} ${symbol}`;
-  if (amount < 0.001) return `${amount.toFixed(8)} ${symbol}`;
-  if (amount < 1) return `${amount.toFixed(6)} ${symbol}`;
-  if (amount < 100) return `${amount.toFixed(4)} ${symbol}`;
-  return `${amount.toFixed(2)} ${symbol}`;
 }
 
 function CoinIcon({ icon, color, size = 32 }: { icon: string; color: string; size?: number }) {
@@ -249,49 +223,88 @@ export default function CheckoutPage() {
   const [copied, setCopied] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30 * 60);
-  const [prices, setPrices] = useState<Record<string, number>>({});
-  const [pricesLoading, setPricesLoading] = useState(true);
+
+  const [lockedPrice, setLockedPrice] = useState<{
+    symbol: string;
+    amount: string;
+    lockedAt: number;
+  } | null>(null);
+  const [priceLockCountdown, setPriceLockCountdown] = useState(0);
+
+  const { pricesData, status, timeAgoStr, refreshIn, getAmount, refresh, isLoading } = usePrices();
 
   useEffect(() => {
-    const ids = Object.keys(COINGECKO_IDS);
-    const batchSize = 10;
-    const batches = [];
-    for (let i = 0; i < ids.length; i += batchSize) {
-      batches.push(ids.slice(i, i + batchSize));
-    }
+    if (!selectedNetwork) return;
+    setTimeLeft(30 * 60);
+    const interval = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(interval);
+          setSelectedNetwork(null);
+          return 30 * 60;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [selectedNetwork]);
 
-    Promise.all(
-      batches.map((batch) =>
-        fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${batch.map((id) => COINGECKO_IDS[id]).join(",")}&vs_currencies=usd`
-        ).then((r) => r.json())
-      )
-    )
-      .then((results) => {
-        const combined: Record<string, number> = {};
-        results.forEach((r) => {
-          Object.entries(r).forEach(([coingeckoId, data]) => {
-            const coinSymbol = Object.entries(COINGECKO_IDS).find(([, id]) => id === coingeckoId)?.[0] || "";
-            combined[coinSymbol] = (data as { usd: number }).usd;
-          });
-        });
-        setPrices(combined);
-      })
-      .catch(() => {
-        setPrices({});
-      })
-      .finally(() => setPricesLoading(false));
+  const lockPrice = useCallback(
+    (symbol: string) => {
+      const amount = getAmount(symbol);
+      const locked: typeof lockedPrice = { symbol, amount, lockedAt: Date.now() };
+      setLockedPrice(locked);
+      setPriceLockCountdown(15 * 60);
+      try {
+        sessionStorage.setItem("price_lock", JSON.stringify(locked));
+      } catch {}
+    },
+    [getAmount]
+  );
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("price_lock");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const elapsed = Math.floor((Date.now() - parsed.lockedAt) / 1000);
+        const remaining = 15 * 60 - elapsed;
+        if (remaining > 0) {
+          setLockedPrice(parsed);
+          setPriceLockCountdown(remaining);
+        } else {
+          sessionStorage.removeItem("price_lock");
+        }
+      }
+    } catch {}
   }, []);
 
+  useEffect(() => {
+    if (priceLockCountdown <= 0 || !lockedPrice) return;
+    const tick = setInterval(() => {
+      setPriceLockCountdown((t) => {
+        const next = t - 1;
+        if (next <= 0) {
+          setLockedPrice(null);
+          try {
+            sessionStorage.removeItem("price_lock");
+          } catch {}
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [priceLockCountdown, lockedPrice]);
+
   const getCryptoAmount = useCallback(
-    (id: string): string => {
-      const symbol = id.split("_")[0];
-      const price = prices[symbol];
-      if (!price || price === 0) return `${PRICE_IN_USD} ${symbol}`;
-      const amount = PRICE_IN_USD / price;
-      return formatCrypto(amount, symbol);
+    (symbol: string): string => {
+      if (lockedPrice && lockedPrice.symbol === symbol) {
+        return lockedPrice.amount;
+      }
+      return getAmount(symbol);
     },
-    [prices]
+    [getAmount, lockedPrice]
   );
 
   const paymentId = selectedNetwork ? selectedNetwork.id : selectedCoin?.id || "";
@@ -432,6 +445,67 @@ export default function CheckoutPage() {
               </span>
             </div>
 
+            {priceLockCountdown > 0 && (
+              <div className="mb-4 flex items-center justify-between rounded-xl border border-brand-600/30 bg-brand-600/5 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex h-4 w-4 items-center justify-center">
+                    <div className="absolute h-4 w-4 rounded-full bg-brand-500/20 animate-ping" />
+                    <CircleDot className="relative h-4 w-4 text-brand-500" />
+                  </div>
+                  <span className="text-sm text-slate-400">Price locked for</span>
+                </div>
+                <span className="text-sm font-mono font-bold text-brand-400">
+                  {formatTime(priceLockCountdown)}
+                </span>
+              </div>
+            )}
+
+            {priceLockCountdown === 0 && lockedPrice && (
+              <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" />
+                  <span className="text-sm font-medium text-amber-400">Price expired</span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (selectedCoin) lockPrice(selectedCoin.symbol);
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600/10 px-3 py-2 text-sm font-medium text-brand-400 transition-colors hover:bg-brand-600/20"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Refresh price
+                </button>
+              </div>
+            )}
+
+            <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    status === "live"
+                      ? "bg-emerald-400 animate-pulse"
+                      : status === "stale"
+                      ? "bg-amber-400"
+                      : "bg-red-400"
+                  }`}
+                />
+                <span>
+                  {status === "live"
+                    ? `Live · Updates in ${refreshIn}s`
+                    : status === "stale"
+                    ? `Updated ${timeAgoStr}`
+                    : "Error · Using cached"}
+                </span>
+              </div>
+              <button
+                onClick={refresh}
+                className="flex items-center gap-1 text-brand-500 hover:text-brand-400 transition-colors"
+              >
+                <RefreshCw className="h-3 w-3" />
+                Refresh
+              </button>
+            </div>
+
             {isReady ? (
               <>
                 <div className="mb-5 flex flex-col items-center rounded-2xl bg-white p-5">
@@ -444,11 +518,17 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="mb-4 rounded-xl border border-slate-800/50 bg-slate-900/50 p-4">
-                  <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-400">
                     Send exactly
                   </p>
-                  <p className="font-mono text-2xl font-bold text-white">
-                    {getCryptoAmount(paymentId)}
+                  <p className="font-mono text-2xl font-bold text-white transition-all duration-300">
+                    {isLoading ? (
+                      <span className="inline-flex items-center gap-2 text-slate-500">
+                        <RefreshCw className="h-5 w-5 animate-spin" /> Fetching price...
+                      </span>
+                    ) : (
+                      getCryptoAmount(paymentId.split("_")[0])
+                    )}
                   </p>
                   <p className="text-sm text-slate-400">≈ ${PRICE_IN_USD} USD</p>
                 </div>
@@ -716,12 +796,16 @@ export default function CheckoutPage() {
                 const isSelected = selectedCoin?.id === coin.id;
                 const isMulti = "networks" in coin;
                 const networkCount = isMulti ? coin.networks.length : 1;
-                const price = prices[coin.symbol];
+                const hasPrice = !!(pricesData?.prices?.[coin.symbol]);
+                const displayAmount = getCryptoAmount(coin.symbol);
 
                 return (
                   <button
                     key={coin.id}
-                    onClick={() => setSelectedCoin(coin)}
+                    onClick={() => {
+                      setSelectedCoin(coin);
+                      lockPrice(coin.symbol);
+                    }}
                     className="coin-card group relative rounded-xl border border-slate-800/50 bg-slate-900/50 p-4 text-left transition-all duration-200"
                     onMouseEnter={(e) => {
                       if (!isSelected) {
@@ -792,19 +876,25 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      {price > 0 ? (
-                        <p
-                          className="font-mono text-2xs font-medium text-slate-300"
-                          style={{ color: `${color}cc` }}
-                        >
-                          {pricesLoading ? (
-                            <span className="inline-flex items-center gap-1 text-slate-500">
-                              <RefreshCw className="h-2.5 w-2.5 animate-spin" /> Loading...
-                            </span>
-                          ) : (
-                            getCryptoAmount(coin.symbol)
-                          )}
-                        </p>
+                      {isLoading ? (
+                        <span className="inline-flex items-center gap-1 font-mono text-2xs text-slate-500">
+                          <RefreshCw className="h-2.5 w-2.5 animate-spin" /> Loading...
+                        </span>
+                      ) : hasPrice ? (
+                        <div className="flex items-center gap-1">
+                          <div
+                            className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                              status === "live"
+                                ? "bg-emerald-400 animate-pulse"
+                                : status === "stale"
+                                ? "bg-amber-400"
+                                : "bg-red-400"
+                            }`}
+                          />
+                          <span className="font-mono text-2xs font-medium text-slate-300">
+                            {displayAmount}
+                          </span>
+                        </div>
                       ) : (
                         <p className="font-mono text-2xs text-slate-500">
                           ${PRICE_IN_USD} USD
