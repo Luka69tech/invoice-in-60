@@ -5,11 +5,27 @@ import { useState, useEffect, useCallback, useRef } from "react";
 export interface PricesData {
   prices: Record<string, number>;
   fetchedAt: number;
-  cached: boolean;
-  error?: string;
 }
 
 export type PriceStatus = "loading" | "live" | "stale" | "error";
+
+const PRICE_IN_USD = 29;
+
+const DIRECT_FALLBACK_IDS = [
+  ["BTC", "bitcoin"],
+  ["ETH", "ethereum"],
+  ["SOL", "solana"],
+  ["BNB", "binancecoin"],
+  ["MATIC", "matic-network"],
+  ["AVAX", "avalanche-2"],
+  ["TRX", "tron"],
+  ["TON", "the-open-network"],
+  ["XRP", "ripple"],
+  ["DOGE", "dogecoin"],
+  ["LTC", "litecoin"],
+  ["ADA", "cardano"],
+  ["ALGO", "algorand"],
+];
 
 function getDecimals(symbol: string): number {
   if (symbol === "BTC") return 8;
@@ -32,88 +48,121 @@ function timeAgo(timestamp: number): string {
   return `${minutes}m ago`;
 }
 
+async function fetchPricesDirect(): Promise<PricesData> {
+  const ids = DIRECT_FALLBACK_IDS.map(([, id]) => id).join(",");
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const data = await res.json();
+  const prices: Record<string, number> = {};
+
+  for (const [symbol, id] of DIRECT_FALLBACK_IDS) {
+    if (symbol === "USDT" || symbol === "USDC") {
+      prices[symbol] = 1;
+    } else if (data[id]) {
+      prices[symbol] = data[id].usd ?? 0;
+    } else {
+      prices[symbol] = 0;
+    }
+  }
+
+  return { prices, fetchedAt: Date.now() };
+}
+
 export function usePrices(enabled = true) {
   const [pricesData, setPricesData] = useState<PricesData | null>(null);
   const [status, setStatus] = useState<PriceStatus>("loading");
   const [timeAgoStr, setTimeAgoStr] = useState("—");
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const refreshCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [refreshIn, setRefreshIn] = useState(30);
   const fetchedAtRef = useRef<number>(0);
-  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchPrices = useCallback(async (isRetry = false) => {
-    if (!enabled) return;
+  const setPrices = useCallback((data: PricesData) => {
+    setPricesData(data);
+    fetchedAtRef.current = data.fetchedAt;
+    retryCountRef.current = 0;
+    setStatus("live");
+  }, []);
+
+  const fetchFromRoute = useCallback(async () => {
     try {
       const res = await fetch("/api/prices", { signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: PricesData = await res.json();
-
-      setPricesData(data);
-      fetchedAtRef.current = data.fetchedAt;
-      retryCountRef.current = 0;
-
-      const age = (Date.now() - data.fetchedAt) / 1000;
-      if (data.cached || age > 60) {
-        setStatus("stale");
-      } else if (data.error) {
-        setStatus("error");
-      } else {
-        setStatus("live");
-      }
+      if (!data.prices || !data.fetchedAt) throw new Error("Invalid response");
+      setPrices(data);
+      return true;
     } catch {
-      retryCountRef.current++;
-      if (retryCountRef.current >= 3) {
-        setStatus("error");
-        setPricesData((prev) =>
-          prev
-            ? { ...prev, error: "Price fetch failed", cached: true }
-            : null
-        );
-      } else if (!isRetry) {
-        retryRef.current = setTimeout(() => fetchPrices(true), 2000);
+      return false;
+    }
+  }, [setPrices]);
+
+  const fetchFallback = useCallback(async () => {
+    try {
+      const data = await fetchPricesDirect();
+      setPrices(data);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [setPrices]);
+
+  const refresh = useCallback(async () => {
+    if (!enabled) return;
+    retryCountRef.current = 0;
+    setRefreshIn(30);
+
+    const ok = await fetchFromRoute();
+    if (!ok) {
+      const fallbackOk = await fetchFallback();
+      if (!fallbackOk) {
+        retryCountRef.current++;
+        if (retryCountRef.current < 3) {
+          retryTimerRef.current = setTimeout(refresh, 3000);
+        } else {
+          setStatus("error");
+        }
       }
     }
-  }, [enabled]);
+  }, [enabled, fetchFromRoute, fetchFallback]);
 
   useEffect(() => {
     if (!enabled) return;
-    fetchPrices();
 
-    refreshCountdownRef.current = setInterval(() => {
-      setRefreshIn((prev) => {
-        if (prev <= 1) return 30;
-        return prev - 1;
-      });
+    refresh();
+
+    countdownRef.current = setInterval(() => {
+      setRefreshIn((prev) => (prev <= 1 ? 30 : prev - 1));
     }, 1000);
 
     intervalRef.current = setInterval(() => {
-      fetchPrices();
-      setRefreshIn(30);
+      refresh();
     }, 30000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (refreshCountdownRef.current) clearInterval(refreshCountdownRef.current);
-      if (retryRef.current) clearTimeout(retryRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
-  }, [enabled, fetchPrices]);
+  }, [enabled, refresh]);
 
   useEffect(() => {
     if (!pricesData?.fetchedAt) return;
     const tick = setInterval(() => {
       setTimeAgoStr(timeAgo(pricesData.fetchedAt));
       const age = (Date.now() - pricesData.fetchedAt) / 1000;
-      if (pricesData.cached || age > 60) {
+      if (age > 60 && status === "live") {
         setStatus("stale");
-      } else if (!pricesData.error) {
-        setStatus("live");
       }
     }, 1000);
     setTimeAgoStr(timeAgo(pricesData.fetchedAt));
     return () => clearInterval(tick);
-  }, [pricesData?.fetchedAt, pricesData?.cached, pricesData?.error]);
+  }, [pricesData?.fetchedAt, status]);
 
   const getAmount = useCallback(
     (symbol: string): string => {
@@ -126,11 +175,6 @@ export function usePrices(enabled = true) {
     [pricesData]
   );
 
-  const refresh = useCallback(() => {
-    setRefreshIn(30);
-    fetchPrices();
-  }, [fetchPrices]);
-
   return {
     pricesData,
     status,
@@ -141,5 +185,3 @@ export function usePrices(enabled = true) {
     isLoading: status === "loading",
   };
 }
-
-const PRICE_IN_USD = 29;

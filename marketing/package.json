@@ -1,0 +1,13 @@
+{
+  "name": "invoice-marketing",
+  "version": "1.0.0",
+  "description": "Marketing automation for Invoice In 60 Seconds",
+  "scripts": {
+    "generate": "npx tsx generate-content.ts",
+    "reddit:dry-run": "npx tsx reddit-poster.ts --dry-run",
+    "reddit:post": "npx tsx reddit-poster.ts",
+    "reddit:post:r/subreddit": "npx tsx reddit-poster.ts --subreddit=r/freelance",
+    "all": "npm run generate && npm run reddit:dry-run"
+  },
+  "dependencies": {}
+}

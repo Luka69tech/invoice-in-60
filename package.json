@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "postinstall": "node scripts/copy-icons.js"
   },
   "dependencies": {
     "@iconify-json/cryptocurrency": "^1.2.3",
