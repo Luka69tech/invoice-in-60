@@ -12,6 +12,7 @@
   "dependencies": {
     "@iconify-json/cryptocurrency": "^1.2.3",
     "@iconify/react": "^6.0.2",
+    "@upstash/redis": "^1.37.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cryptocurrency-icons": "^0.18.1",
