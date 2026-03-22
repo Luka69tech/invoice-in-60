@@ -232,9 +232,19 @@ export default function BuilderPage() {
             )}
           </button>
           {!isPro && (
-            <Link href="/checkout?plan=starter" className="hidden text-sm font-semibold text-brand-600 sm:block">
+            <button
+              onClick={() => {
+                const productId = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_ID || "your-product-id";
+                if (window.Gumroad?.Product) {
+                  window.Gumroad.Product.Show({ productId });
+                } else {
+                  window.open(`https://gumroad.com/l/${productId}`, "_blank");
+                }
+              }}
+              className="hidden text-sm font-semibold text-brand-600 sm:block"
+            >
               Upgrade to Pro →
-            </Link>
+            </button>
           )}
         </div>
       </header>

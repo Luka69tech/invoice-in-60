@@ -1,58 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-
 export default function CheckoutPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const plan = params.get("plan") || "starter";
-
-    fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error(data.error || "Checkout failed");
-        }
-      })
-      .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : "Something went wrong");
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-          <p className="text-slate-600">Redirecting to secure checkout...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleClick = () => {
+    const productId = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_ID || "your-product-id";
+    if (window.Gumroad?.Product) {
+      window.Gumroad.Product.Show({ productId });
+    } else {
+      window.open(`https://gumroad.com/l/${productId}`, "_blank");
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
       <div className="card max-w-md text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-3xl">
-          ✕
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-3xl">
+          💳
         </div>
-        <h1 className="mb-2 text-xl font-bold text-slate-900">Checkout Error</h1>
-        <p className="mb-6 text-slate-600">{error}</p>
-        <Link href="/builder" className="btn-primary">
-          Back to Builder
-        </Link>
+        <h1 className="mb-2 text-xl font-bold text-slate-900">Upgrade to Pro</h1>
+        <p className="mb-6 text-slate-600">
+          Get unlimited invoices, AI suggestions, and brand customization for a one-time payment.
+        </p>
+        <button onClick={handleClick} className="btn-primary w-full">
+          Buy Pro — $29
+        </button>
+        <p className="mt-3 text-xs text-slate-500">
+          Secure payment via Gumroad · 14-day money-back guarantee
+        </p>
       </div>
     </div>
   );
+}
+
+declare global {
+  interface Window {
+    Gumroad?: {
+      Product?: {
+        Show: (opts: { productId: string }) => void;
+      };
+    };
+  }
 }

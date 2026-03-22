@@ -67,7 +67,7 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "Stripe one-time payment. Credit cards, debit cards, Apple Pay, Google Pay — whatever you already use.",
+    a: "Secure one-time payment via Gumroad. Credit cards, debit cards, PayPal, Apple Pay, Google Pay — whatever you already use.",
   },
   {
     q: "Is this a subscription?",
@@ -390,9 +390,19 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/checkout?plan=starter" className="btn-primary w-full">
+              <button
+                onClick={() => {
+                  const productId = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_ID || "your-product-id";
+                  if (window.Gumroad?.Product) {
+                    window.Gumroad.Product.Show({ productId });
+                  } else {
+                    window.open(`https://gumroad.com/l/${productId}`, "_blank");
+                  }
+                }}
+                className="btn-primary w-full"
+              >
                 Buy Pro — $29
-              </Link>
+              </button>
               <p className="mt-3 text-center text-xs text-slate-500">
                 14-day money-back guarantee
               </p>

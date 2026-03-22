@@ -6,10 +6,10 @@ import Link from "next/link";
 export default function SuccessPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const gumroadSuccess = params.get("success") === "true";
     const sessionId = params.get("session_id");
-    if (sessionId) {
+    if (gumroadSuccess || sessionId) {
       localStorage.setItem("invoicegen_pro", "true");
-      localStorage.setItem("invoicegen_session", sessionId);
     }
   }, []);
 
@@ -26,7 +26,7 @@ export default function SuccessPage() {
           Payment confirmed. You now have unlimited access to all Pro features.
         </p>
         <p className="mb-8 text-sm text-slate-500">
-          Your receipt was sent to your email via Stripe.
+          Your receipt was sent to your email via Gumroad.
         </p>
         <div className="flex flex-col gap-3">
           <Link href="/builder" className="btn-primary">
