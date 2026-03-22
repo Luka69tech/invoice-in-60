@@ -19,6 +19,40 @@ import {
 
 const PRICE_IN_USD = 29;
 
+function CoinIcon({ icon, size = 24 }: { icon: string; size?: number }) {
+  if (icon === "ton") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="64" height="64" rx="16" fill="#0098EA"/>
+        <path d="M20 44V20h8l16 16 16-16h-8V44h-8V28l-16-16-16 16v16h-8z" fill="white"/>
+      </svg>
+    );
+  }
+  if (icon === "xrp") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="64" height="64" rx="16" fill="#23292F"/>
+        <path d="M32 8C18.745 8 8 18.745 8 32s10.745 24 24 24 24-10.745 24-24S45.255 8 32 8zm10.5 35.5c0 2.485-4.5 4.5-10.5 4.5s-10.5-2.015-10.5-4.5v-7c0-2.485 4.5-4.5 10.5-4.5s10.5 2.015 10.5 4.5v7zm0-17c0 2.485-4.5 4.5-10.5 4.5s-10.5-2.015-10.5-4.5v-7c0-2.485 4.5-4.5 10.5-4.5s10.5 2.015 10.5 4.5v7z" fill="white"/>
+      </svg>
+    );
+  }
+  if (icon === "algo") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="64" height="64" rx="16" fill="#000"/>
+        <path d="M32 12L52 44H12L32 12Z" fill="white"/>
+        <path d="M32 52L12 20H52L32 52Z" fill="white" fillOpacity="0.5"/>
+      </svg>
+    );
+  }
+  return (
+    <Icon
+      icon={`cryptocurrency:${icon}`}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
 const COIN_CATEGORIES = [
   {
     label: "Stablecoins",
@@ -339,14 +373,10 @@ export default function CheckoutPage() {
             {/* Coin info */}
             <div className="flex items-center gap-3 mb-6">
               <div
-                className="h-12 w-12 rounded-xl flex items-center justify-center"
+                className="h-12 w-12 rounded-xl flex items-center justify-center overflow-hidden"
                 style={{ backgroundColor: `${ICON_COLORS[coin.icon] || "#666"}20` }}
               >
-                <Icon
-                  icon={`cryptocurrency:${coin.icon}`}
-                  className="h-7 w-7"
-                  style={{ color: ICON_COLORS[coin.icon] || "#666" }}
-                />
+                <CoinIcon icon={coin.icon} size={32} />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white">
@@ -522,14 +552,10 @@ export default function CheckoutPage() {
                     )}
                     <div className="flex items-center gap-3 mb-2">
                       <div
-                        className="h-9 w-9 rounded-lg flex items-center justify-center"
+                        className="h-9 w-9 rounded-lg flex items-center justify-center overflow-hidden"
                         style={{ backgroundColor: `${ICON_COLORS[c.icon] || "#666"}20` }}
                       >
-                        <Icon
-                          icon={`cryptocurrency:${c.icon}`}
-                          className="h-5 w-5"
-                          style={{ color: ICON_COLORS[c.icon] || "#666" }}
-                        />
+                        <CoinIcon icon={c.icon} size={24} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{c.symbol}</p>
