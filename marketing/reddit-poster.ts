@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+// @ts-nocheck
 /**
  * Reddit Marketing Automation Script
  * 
@@ -161,7 +161,7 @@ async function getRedditToken() {
     headers: {
       Authorization: `Basic ${auth}`,
       "Content-Type": "application/x-www-form-urlencoded",
-      User-Agent: "InvoiceIn60Seconds/1.0 (contact@lukito.com)",
+      "User-Agent": "InvoiceIn60Seconds/1.0 (contact@lukito.com)",
     },
     body: "grant_type=password&username=&password=",
   });
@@ -177,7 +177,7 @@ async function postToReddit(token, subreddit, post) {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      User-Agent: "InvoiceIn60Seconds/1.0",
+      "User-Agent": "InvoiceIn60Seconds/1.0",
     },
     body: JSON.stringify({
       sr: subreddit.replace("r/", ""),
