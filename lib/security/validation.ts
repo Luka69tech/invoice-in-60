@@ -89,6 +89,7 @@ export const pdfRequestSchema = z.object({
     symbol: z.string().max(5),
     name: z.string().max(50),
   }),
+  fingerprintHash: z.string().length(64).optional(),
 });
 
 export type ValidatedPdfRequest = z.infer<typeof pdfRequestSchema>;
