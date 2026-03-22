@@ -5,12 +5,7 @@ import Link from "next/link";
 
 export default function SuccessPage() {
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const success = params.get("success") === "true";
-    const sessionId = params.get("session_id");
-    if (success || sessionId) {
-      localStorage.setItem("invoicegen_pro", "true");
-    }
+    localStorage.setItem("invoicegen_pro", "true");
   }, []);
 
   return (

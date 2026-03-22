@@ -42,7 +42,7 @@ const currencies = [
 ];
 
 function generateId() {
-  return Math.random().toString(36).substring(2, 9);
+  return crypto.randomUUID();
 }
 
 function formatDate(d: string) {
