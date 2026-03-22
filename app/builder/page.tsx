@@ -232,19 +232,12 @@ export default function BuilderPage() {
             )}
           </button>
           {!isPro && (
-            <button
-              onClick={() => {
-                const productId = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_ID || "your-product-id";
-                if (window.Gumroad?.Product) {
-                  window.Gumroad.Product.Show({ productId });
-                } else {
-                  window.open(`https://gumroad.com/l/${productId}`, "_blank");
-                }
-              }}
-              className="hidden text-sm font-semibold text-brand-600 sm:block"
+            <Link
+              href="/checkout"
+              className="hidden text-sm font-semibold text-brand-600 hover:text-brand-700 sm:block"
             >
               Upgrade to Pro →
-            </button>
+            </Link>
           )}
         </div>
       </header>
@@ -262,7 +255,7 @@ export default function BuilderPage() {
               <p className="font-semibold text-brand-800">Love it? Get unlimited invoices + AI.</p>
               <p className="text-sm text-brand-600">One-time $29 — never pay again.</p>
             </div>
-            <Link href="/checkout?plan=starter" className="btn-primary shrink-0 text-sm">
+            <Link href="/checkout" className="btn-primary shrink-0 text-sm">
               Buy Pro — $29
             </Link>
           </div>

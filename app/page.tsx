@@ -67,7 +67,7 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "Secure one-time payment via Gumroad. Credit cards, debit cards, PayPal, Apple Pay, Google Pay — whatever you already use.",
+    a: "Crypto only — BTC, ETH, SOL, USDT, USDC, TRX, MATIC, AVAX, DOGE, LTC, XRP, TON, ADA and more. Fast, private, no intermediaries.",
   },
   {
     q: "Is this a subscription?",
@@ -83,7 +83,7 @@ const faqs = [
   },
   {
     q: "Can I get a refund?",
-    a: "Yes. If you're not satisfied within 14 days, email us and we'll refund you. No questions asked.",
+    a: "Yes. Contact us within 14 days and we'll refund you. No questions asked.",
   },
 ];
 
@@ -390,21 +390,11 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => {
-                  const productId = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_ID || "your-product-id";
-                  if (window.Gumroad?.Product) {
-                    window.Gumroad.Product.Show({ productId });
-                  } else {
-                    window.open(`https://gumroad.com/l/${productId}`, "_blank");
-                  }
-                }}
-                className="btn-primary w-full"
-              >
+              <Link href="/checkout" className="btn-primary w-full block text-center">
                 Buy Pro — $29
-              </button>
+              </Link>
               <p className="mt-3 text-center text-xs text-slate-500">
-                14-day money-back guarantee
+                Crypto payments · BTC, ETH, SOL, USDT & more
               </p>
             </div>
           </div>
