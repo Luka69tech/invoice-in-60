@@ -4,6 +4,8 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { UpgradeModal } from "./UpgradeModal";
+import { generateClientFingerprint } from "@/lib/fingerprint-client";
 
 interface LineItem {
   id: string;
@@ -81,10 +83,38 @@ export default function BuilderPage() {
   const [showUpsell, setShowUpsell] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [fingerprintHash, setFingerprintHash] = useState("");
+  const [usageUsed, setUsageUsed] = useState(0);
+  const [usageLimit] = useState(3);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [usageLoaded, setUsageLoaded] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsPro(!!localStorage.getItem("invoicegen_pro"));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    generateClientFingerprint().then((fp) => {
+      if (fp.hash) {
+        setFingerprintHash(fp.hash);
+        const params = new URLSearchParams({
+          ua: fp.userAgent,
+          sr: fp.screenResolution,
+          tz: fp.timezone,
+        });
+        fetch(`/api/check-usage?${params}`)
+          .then((r) => r.json())
+          .then((data) => {
+            setUsageUsed(data.usedCount || 0);
+            setUsageLoaded(true);
+          })
+          .catch(() => setUsageLoaded(true));
+      } else {
+        setUsageLoaded(true);
+      }
+    });
   }, []);
 
   const currency = currencies.find((c) => c.code === invoice.currency) || currencies[0];
@@ -165,15 +195,45 @@ export default function BuilderPage() {
       setPdfError("Please fill in at least your name and client name.");
       return;
     }
+
+    if (!isPro && fingerprintHash) {
+      const fpData = await generateClientFingerprint();
+      const params = new URLSearchParams({
+        ua: fpData.userAgent,
+        sr: fpData.screenResolution,
+        tz: fpData.timezone,
+        increment: "true",
+      });
+      try {
+        const usageRes = await fetch(`/api/check-usage?${params}`);
+        const usageData = await usageRes.json();
+        if (usageData.upgradeRequired) {
+          setUsageUsed(usageData.usedCount);
+          setShowUpgradeModal(true);
+          return;
+        }
+        if (usageRes.status === 429) {
+          setPdfError("Too many requests. Please wait before generating another invoice.");
+          return;
+        }
+      } catch {
+        // Proceed without usage check if it fails
+      }
+    }
+
     setPdfLoading(true);
     try {
       const res = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoice, currency }),
+        body: JSON.stringify({ invoice, currency, fingerprintHash }),
       });
       if (!res.ok) {
         const err = await res.json();
+        if (err.upgradeRequired) {
+          setShowUpgradeModal(true);
+          return;
+        }
         throw new Error(err.error || "PDF generation failed");
       }
       const blob = await res.blob();
@@ -183,6 +243,19 @@ export default function BuilderPage() {
       a.download = `invoice-${invoice.invoiceNumber}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+
+      if (!isPro && fingerprintHash) {
+        const fpData = await generateClientFingerprint();
+        const params = new URLSearchParams({
+          ua: fpData.userAgent,
+          sr: fpData.screenResolution,
+          tz: fpData.timezone,
+        });
+        fetch(`/api/check-usage?${params}`)
+          .then((r) => r.json())
+          .then((data) => setUsageUsed(data.usedCount || 0));
+      }
+
       if (!isPro) {
         setShowUpsell(true);
       }
@@ -237,6 +310,17 @@ export default function BuilderPage() {
               "Download PDF"
             )}
           </button>
+          {!isPro && usageLoaded && usageUsed >= 1 && (
+            <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
+              <span>{usageUsed}/{usageLimit} free invoices used</span>
+              <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-brand-500 transition-all"
+                  style={{ width: `${Math.min(100, (usageUsed / usageLimit) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
           {!isPro && (
             <Link
               href="/checkout"
@@ -515,6 +599,14 @@ export default function BuilderPage() {
           </div>
         </div>
       </div>
+
+      {showUpgradeModal && (
+        <UpgradeModal
+          usedCount={usageUsed}
+          limit={usageLimit}
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
     </div>
   );
 }
