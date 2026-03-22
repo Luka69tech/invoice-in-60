@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Icon } from "@iconify/react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Copy,
@@ -11,132 +10,58 @@ import {
   Clock,
   AlertTriangle,
   ArrowLeft,
-  Zap,
   Coins,
   ShieldCheck,
   ChevronRight,
+  Zap,
+  Sparkles,
+  Clock3,
+  RefreshCw,
 } from "lucide-react";
 
 const PRICE_IN_USD = 29;
 
-function CoinIcon({ icon, size = 24 }: { icon: string; size?: number }) {
-  if (icon === "ton") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#0098EA"/>
-        <path d="M20 44V20h8l16 16 16-16h-8V44h-8V28l-16-16-16 16v16h-8z" fill="white"/>
-      </svg>
-    );
-  }
-  if (icon === "xrp") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#23292F"/>
-        <path d="M32 8C18.745 8 8 18.745 8 32s10.745 24 24 24 24-10.745 24-24S45.255 8 32 8zm10.5 35.5c0 2.485-4.5 4.5-10.5 4.5s-10.5-2.015-10.5-4.5v-7c0-2.485 4.5-4.5 10.5-4.5s10.5 2.015 10.5 4.5v7zm0-17c0 2.485-4.5 4.5-10.5 4.5s-10.5-2.015-10.5-4.5v-7c0-2.485 4.5-4.5 10.5-4.5s10.5 2.015 10.5 4.5v7z" fill="white"/>
-      </svg>
-    );
-  }
-  if (icon === "algo") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#000"/>
-        <path d="M32 12L52 44H12L32 12Z" fill="white"/>
-        <path d="M32 52L12 20H52L32 52Z" fill="white" fillOpacity="0.5"/>
-      </svg>
-    );
-  }
-  if (icon === "stellar") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#14B8E6"/>
-        <path d="M44 20l-8 12 8 12M20 44l8-12-8-12M32 14c-2 4-6 6-10 6 4 0 8 2 10 6M32 50c2-4 6-6 10-6-4 0-8-2-10-6" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
-    );
-  }
-  if (icon === "polygon") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#8247E5"/>
-        <path d="M44 24l-8 4v8l8 4M20 24l8 4v8l-8 4M32 32l8-4M32 32l-8-4M32 32v8M32 40l-8-4M32 40l8-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    );
-  }
-  if (icon === "arbitrum") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#28A0F0"/>
-        <path d="M32 16l16 8-16 24-16-24 16-8z" fill="white" fillOpacity="0.9"/>
-        <path d="M32 32l8 4-8 12-8-12 8-4z" fill="white"/>
-      </svg>
-    );
-  }
-  if (icon === "optimism") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#FF0420"/>
-        <circle cx="32" cy="32" r="12" fill="white"/>
-      </svg>
-    );
-  }
-  if (icon === "base") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#0052FF"/>
-        <path d="M40 24H24l8 8-8 8h16l8-8-8-8z" fill="white"/>
-        <circle cx="24" cy="24" r="3" fill="white"/>
-        <circle cx="40" cy="24" r="3" fill="white"/>
-        <circle cx="24" cy="40" r="3" fill="white"/>
-        <circle cx="40" cy="40" r="3" fill="white"/>
-      </svg>
-    );
-  }
-  if (icon === "usdt") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#26A17B"/>
-        <path d="M42 18H22c-1.1 0-2 .9-2 2v24c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V20c0-1.1-.9-2-2-2z" fill="white" fillOpacity="0.15"/>
-        <path d="M37 28c-.6-1-1.7-1.7-3.3-1.7-2.2 0-3.7 1.7-3.7 4.2 0 2.4 1.5 4 3.8 4 1.5 0 2.7-.7 3.2-1.6v-4.6h-3.3v1.4h2v3.3c-.8.7-1.8 1-3 1-2.6 0-4.7-2-4.7-5s2-5 4.7-5c1.4 0 2.4.4 3.2 1.4l-1.2 1.5z" fill="white"/>
-        <path d="M27.5 30c-.6-1.2-1.7-2-3.3-2s-2.8.8-3.3 2l-1.2-.5c.7-1.8 2.3-3 4.5-3s3.8 1.2 4.5 3l-1.2.5zm8 4h-3.3V23.5h3.3V34zm4 0h-3.3V27h3.3V34z" fill="white"/>
-      </svg>
-    );
-  }
-  if (icon === "usdc") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <rect width="64" height="64" rx="16" fill="#2775CA"/>
-        <circle cx="32" cy="32" r="14" fill="white" fillOpacity="0.2"/>
-        <path d="M22 36.5V27.5l6 4.5 6-4.5v9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M22 32l6-4.5 6 4.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    );
-  }
+const COIN_COLORS: Record<string, string> = {
+  BTC: "#f7931a",
+  ETH: "#627eea",
+  SOL: "#9945ff",
+  BNB: "#f3ba2f",
+  USDT: "#26a17b",
+  USDC: "#2775ca",
+  MATIC: "#8247e5",
+  AVAX: "#e84142",
+  TRX: "#eb0029",
+  TON: "#0098ea",
+  XRP: "#346aa9",
+  DOGE: "#c2a633",
+  LTC: "#bfbbbb",
+  ADA: "#0033ad",
+  ALGO: "#fbcc5c",
+};
+
+function CoinSvg({ symbol, size = 32 }: { symbol: string; size?: number }) {
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const s = symbol.toLowerCase();
+
+  useEffect(() => {
+    fetch(`/cryptocurrency-icons/svg/color/${s}.svg`)
+      .then((r) => {
+        if (r.ok) return r.text();
+        throw new Error("not found");
+      })
+      .then(setSvgContent)
+      .catch(() => setSvgContent(null));
+  }, [s]);
+
+  if (!svgContent) return null;
+
   return (
-    <Icon icon={`cryptocurrency:${icon}`} style={{ width: size, height: size }} />
+    <div
+      style={{ width: size, height: size, flexShrink: 0 }}
+      dangerouslySetInnerHTML={{ __html: svgContent.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "").replace(/width="[^"]*"/, "").replace(/height="[^"]*"/, "") }}
+    />
   );
 }
-
-const ICON_COLORS: Record<string, string> = {
-  btc: "#F7931A",
-  eth: "#627EEA",
-  sol: "#9945FF",
-  bnb: "#F3BA2F",
-  usdt: "#26A17B",
-  usdc: "#2775CA",
-  trx: "#EB0029",
-  matic: "#8247E5",
-  avax: "#E84142",
-  doge: "#C2A633",
-  ltc: "#345D9D",
-  xrp: "#23292F",
-  ton: "#0098EA",
-  ada: "#0033AD",
-  algo: "#000000",
-  stellar: "#14B8E6",
-  polygon: "#8247E5",
-  arbitrum: "#28A0F0",
-  optimism: "#FF0420",
-  base: "#0052FF",
-};
 
 const COIN_CATEGORIES = [
   {
@@ -149,6 +74,7 @@ const COIN_CATEGORIES = [
         symbol: "USDT",
         icon: "usdt",
         popular: true,
+        badge: "Most Popular",
         networks: [
           { id: "usdt_trc20", name: "TRON", shortName: "TRC-20", icon: "trx" },
           { id: "usdt_erc20", name: "Ethereum", shortName: "ERC-20", icon: "eth" },
@@ -185,62 +111,28 @@ const COIN_CATEGORIES = [
     label: "Major",
     popular: false,
     coins: [
-      { id: "BTC", name: "Bitcoin", symbol: "BTC", icon: "btc", network: "Bitcoin" },
-      { id: "ETH", name: "Ethereum", symbol: "ETH", icon: "eth", network: "ERC-20" },
-      { id: "SOL", name: "Solana", symbol: "SOL", icon: "sol", network: "Solana" },
-      { id: "BNB", name: "BNB", symbol: "BNB", icon: "bnb", network: "BEP-20" },
+      { id: "BTC", name: "Bitcoin", symbol: "BTC", icon: "btc", network: "Bitcoin", badge: null },
+      { id: "ETH", name: "Ethereum", symbol: "ETH", icon: "eth", network: "ERC-20", badge: "Most Popular" },
+      { id: "SOL", name: "Solana", symbol: "SOL", icon: "sol", network: "Solana", badge: null },
+      { id: "BNB", name: "BNB", symbol: "BNB", icon: "bnb", network: "BEP-20", badge: null },
     ],
   },
   {
     label: "Altcoins",
     popular: false,
     coins: [
-      { id: "MATIC", name: "Polygon", symbol: "MATIC", icon: "matic", network: "Polygon" },
-      { id: "AVAX", name: "Avalanche", symbol: "AVAX", icon: "avax", network: "C-Chain" },
-      { id: "TRX", name: "TRON", symbol: "TRX", icon: "trx", network: "TRC-20" },
-      { id: "TON", name: "Toncoin", symbol: "TON", icon: "ton", network: "TON" },
-      { id: "XRP", name: "XRP", symbol: "XRP", icon: "xrp", network: "XRP Ledger" },
-      { id: "DOGE", name: "Dogecoin", symbol: "DOGE", icon: "doge", network: "Dogecoin" },
-      { id: "LTC", name: "Litecoin", symbol: "LTC", icon: "ltc", network: "Litecoin" },
-      { id: "ADA", name: "Cardano", symbol: "ADA", icon: "ada", network: "Cardano" },
-      { id: "ALGO", name: "Algorand", symbol: "ALGO", icon: "algo", network: "Algorand" },
+      { id: "MATIC", name: "Polygon", symbol: "MATIC", icon: "matic", network: "Polygon", badge: null },
+      { id: "AVAX", name: "Avalanche", symbol: "AVAX", icon: "avax", network: "C-Chain", badge: null },
+      { id: "TRX", name: "TRON", symbol: "TRX", icon: "trx", network: "TRC-20", badge: null },
+      { id: "TON", name: "Toncoin", symbol: "TON", icon: "ton", network: "TON", badge: null },
+      { id: "XRP", name: "XRP", symbol: "XRP", icon: "xrp", network: "XRP Ledger", badge: null },
+      { id: "DOGE", name: "Dogecoin", symbol: "DOGE", icon: "doge", network: "Dogecoin", badge: null },
+      { id: "LTC", name: "Litecoin", symbol: "LTC", icon: "ltc", network: "Litecoin", badge: null },
+      { id: "ADA", name: "Cardano", symbol: "ADA", icon: "ada", network: "Cardano", badge: null },
+      { id: "ALGO", name: "Algorand", symbol: "ALGO", icon: "algo", network: "Algorand", badge: null },
     ],
   },
 ];
-
-const STATIC_PRICES: Record<string, number> = {
-  BTC: 0.00055,
-  ETH: 0.011,
-  SOL: 0.18,
-  BNB: 0.09,
-  USDT_TRC20: 29.0,
-  USDT_ERC20: 29.1,
-  USDT_BSC: 29.0,
-  USDT_SOL: 29.0,
-  USDT_POLYGON: 29.0,
-  USDT_AVAX: 29.0,
-  USDT_ARBITRUM: 29.0,
-  USDT_OPTIMISM: 29.0,
-  USDT_BASE: 29.0,
-  USDC_ERC20: 29.0,
-  USDC_SOL: 29.0,
-  USDC_BSC: 29.0,
-  USDC_POLYGON: 29.0,
-  USDC_AVAX: 29.0,
-  USDC_ARBITRUM: 29.0,
-  USDC_OPTIMISM: 29.0,
-  USDC_BASE: 29.0,
-  USDC_STELLAR: 29.0,
-  TRX: 290,
-  MATIC: 22,
-  AVAX: 1.1,
-  DOGE: 380,
-  LTC: 0.38,
-  XRP: 58,
-  TON: 18,
-  ADA: 82,
-  ALGO: 58,
-};
 
 const NETWORK_EXPLORERS: Record<string, (addr: string) => string> = {
   BTC: (a) => `https://blockstream.info/address/${a}`,
@@ -292,6 +184,24 @@ const QR_SCHEMES: Record<string, (addr: string, amount: number) => string> = {
   ADA: (a, amt) => `cardano:${a}?amount=${amt}`,
 };
 
+const COINGECKO_IDS: Record<string, string> = {
+  BTC: "bitcoin",
+  ETH: "ethereum",
+  SOL: "solana",
+  BNB: "binancecoin",
+  USDT: "tether",
+  USDC: "usd-coin",
+  MATIC: "matic-network",
+  AVAX: "avalanche-2",
+  TRX: "tron",
+  TON: "the-open-network",
+  XRP: "ripple",
+  DOGE: "dogecoin",
+  LTC: "litecoin",
+  ADA: "cardano",
+  ALGO: "algorand",
+};
+
 type CoinEntry = (typeof COIN_CATEGORIES)[number]["coins"][number];
 type NetworkEntry = { id: string; name: string; shortName: string; icon: string };
 
@@ -301,15 +211,36 @@ function getWalletAddress(id: string): string {
   return addr;
 }
 
-function getCryptoAmount(id: string): string {
-  const symbol = id.split("_")[0];
-  const upperId = id.toUpperCase().replace(/-/g, "_");
-  const price = STATIC_PRICES[upperId];
-  if (!price) return "—";
-  if (price < 0.001) return `${price.toFixed(8)} ${symbol}`;
-  if (price < 1) return `${price.toFixed(6)} ${symbol}`;
-  if (price < 100) return `${price.toFixed(4)} ${symbol}`;
-  return `${price.toFixed(2)} ${symbol}`;
+function formatCrypto(amount: number, symbol: string): string {
+  if (amount === 0) return "—";
+  if (amount < 0.00001) return `${amount.toExponential(2)} ${symbol}`;
+  if (amount < 0.001) return `${amount.toFixed(8)} ${symbol}`;
+  if (amount < 1) return `${amount.toFixed(6)} ${symbol}`;
+  if (amount < 100) return `${amount.toFixed(4)} ${symbol}`;
+  return `${amount.toFixed(2)} ${symbol}`;
+}
+
+function CoinIcon({ icon, color, size = 32 }: { icon: string; color: string; size?: number }) {
+  const s = icon.toLowerCase();
+  const svgMap: Record<string, string> = {
+    trx: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><path d="M16 42V22l16 10L48 22v20l-16-10-16 10z" fill="white"/></svg>`,
+    ton: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><path d="M20 44V20h8l16 16 16-16h-8V44h-8V28l-16-16-16 16v16h-8z" fill="white"/></svg>`,
+    xrp: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="#23292F"/><path d="M32 8C18.745 8 8 18.745 8 32s10.745 24 24 24 24-10.745 24-24S45.255 8 32 8zm10.5 35.5c0 2.485-4.5 4.5-10.5 4.5s-10.5-2.015-10.5-4.5v-7c0-2.485 4.5-4.5 10.5-4.5s10.5 2.015 10.5 4.5v7zm0-17c0 2.485-4.5 4.5-10.5 4.5s-10.5-2.015-10.5-4.5v-7c0-2.485 4.5-4.5 10.5-4.5s10.5 2.015 10.5 4.5v7z" fill="white"/></svg>`,
+    algo: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><path d="M32 12L52 44H12L32 12Z" fill="white"/><path d="M32 52L12 20H52L32 52Z" fill="white" fillOpacity="0.5"/></svg>`,
+    stellar: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><path d="M44 20l-8 12 8 12M20 44l8-12-8-12M32 14c-2 4-6 6-10 6 4 0 8 2 10 6M32 50c2-4 6-6 10-6-4 0-8-2-10-6" stroke="white" strokeWidth="3" strokeLinecap="round"/></svg>`,
+    polygon: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><path d="M44 24l-8 4v8l8 4M20 24l8 4v8l-8 4M32 32l8-4M32 32l-8-4M32 32v8M32 40l-8-4M32 40l8-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>`,
+    arbitrum: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="#28A0F0"/><path d="M32 16l16 8-16 24-16-24 16-8z" fill="white" fillOpacity="0.9"/><path d="M32 32l8 4-8 12-8-12 8-4z" fill="white"/></svg>`,
+    optimism: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="#FF0420"/><circle cx="32" cy="32" r="12" fill="white"/></svg>`,
+    base: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="#0052FF"/><path d="M40 24H24l8 8-8 8h16l8-8-8-8z" fill="white"/><circle cx="24" cy="24" r="3" fill="white"/><circle cx="40" cy="24" r="3" fill="white"/><circle cx="24" cy="40" r="3" fill="white"/><circle cx="40" cy="40" r="3" fill="white"/></svg>`,
+    usdt: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><path d="M37 28c-.6-1-1.7-1.7-3.3-1.7-2.2 0-3.7 1.7-3.7 4.2 0 2.4 1.5 4 3.8 4 1.5 0 2.7-.7 3.2-1.6v-4.6h-3.3v1.4h2v3.3c-.8.7-1.8 1-3 1-2.6 0-4.7-2-4.7-5s2-5 4.7-5c1.4 0 2.4.4 3.2 1.4l-1.2 1.5z" fill="white"/><path d="M27.5 30c-.6-1.2-1.7-2-3.3-2s-2.8.8-3.3 2l-1.2-.5c.7-1.8 2.3-3 4.5-3s3.8 1.2 4.5 3l-1.2.5z" fill="white"/><path d="M27.5 30c-.6-1.2-1.7-2-3.3-2s-2.8.8-3.3 2l-1.2-.5c.7-1.8 2.3-3 4.5-3s3.8 1.2 4.5 3l-1.2.5z" fill="white"/></svg>`,
+    usdc: `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="${color}"/><circle cx="32" cy="32" r="14" fill="white" fillOpacity="0.2"/><path d="M22 36.5V27.5l6 4.5 6-4.5v9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M22 32l6-4.5 6 4.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>`,
+  };
+
+  if (svgMap[s]) {
+    return <div style={{ width: size, height: size, flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: svgMap[s] }} />;
+  }
+
+  return <CoinSvg symbol={s} size={size} />;
 }
 
 export default function CheckoutPage() {
@@ -318,16 +249,60 @@ export default function CheckoutPage() {
   const [copied, setCopied] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30 * 60);
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [pricesLoading, setPricesLoading] = useState(true);
+
+  useEffect(() => {
+    const ids = Object.keys(COINGECKO_IDS);
+    const batchSize = 10;
+    const batches = [];
+    for (let i = 0; i < ids.length; i += batchSize) {
+      batches.push(ids.slice(i, i + batchSize));
+    }
+
+    Promise.all(
+      batches.map((batch) =>
+        fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${batch.map((id) => COINGECKO_IDS[id]).join(",")}&vs_currencies=usd`
+        ).then((r) => r.json())
+      )
+    )
+      .then((results) => {
+        const combined: Record<string, number> = {};
+        results.forEach((r) => {
+          Object.entries(r).forEach(([coingeckoId, data]) => {
+            const coinSymbol = Object.entries(COINGECKO_IDS).find(([, id]) => id === coingeckoId)?.[0] || "";
+            combined[coinSymbol] = (data as { usd: number }).usd;
+          });
+        });
+        setPrices(combined);
+      })
+      .catch(() => {
+        setPrices({});
+      })
+      .finally(() => setPricesLoading(false));
+  }, []);
+
+  const getCryptoAmount = useCallback(
+    (id: string): string => {
+      const symbol = id.split("_")[0];
+      const price = prices[symbol];
+      if (!price || price === 0) return `${PRICE_IN_USD} ${symbol}`;
+      const amount = PRICE_IN_USD / price;
+      return formatCrypto(amount, symbol);
+    },
+    [prices]
+  );
 
   const paymentId = selectedNetwork ? selectedNetwork.id : selectedCoin?.id || "";
   const address = paymentId ? getWalletAddress(paymentId) : "";
   const isConfigured = !!address;
-  const price = STATIC_PRICES[paymentId.toUpperCase().replace(/-/g, "_")] || 0;
   const qrScheme = QR_SCHEMES[paymentId] || ((a: string) => a);
-  const qrData = isConfigured ? qrScheme(address, price) : "";
-  const explorerUrl = isConfigured && NETWORK_EXPLORERS[paymentId]
-    ? NETWORK_EXPLORERS[paymentId](address)
-    : null;
+  const qrData = isConfigured ? qrScheme(address, PRICE_IN_USD) : "";
+  const explorerUrl =
+    isConfigured && NETWORK_EXPLORERS[paymentId] ? NETWORK_EXPLORERS[paymentId](address) : null;
+
+  const coinColor = selectedCoin ? COIN_COLORS[selectedCoin.symbol] || "#666" : "#666";
 
   useEffect(() => {
     if (!selectedNetwork) return;
@@ -363,28 +338,20 @@ export default function CheckoutPage() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const getCoinConfiguredCount = (coin: CoinEntry) => {
-    if ("networks" in coin) {
-      return coin.networks.filter((n) => getWalletAddress(n.id)).length;
-    }
-    return getWalletAddress(coin.id) ? 1 : 0;
-  };
-
-  const getCoinTotal = (coin: CoinEntry) => {
-    return "networks" in coin ? coin.networks.length : 1;
-  };
-
   if (confirmed) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-5">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-5">
         <div className="w-full max-w-md">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 p-8 text-center">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-              <ShieldCheck className="h-8 w-8 text-emerald-500" />
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8 text-center">
+            <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
+                <ShieldCheck className="h-8 w-8 text-emerald-400" />
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Payment Submitted!</h1>
-            <p className="text-slate-400 mb-2">Your payment is being verified. Pro access is now active.</p>
-            <p className="text-xs text-slate-600 mb-8">Manual verification typically takes 10-30 minutes.</p>
+            <h1 className="mb-2 text-2xl font-bold text-white">Payment Submitted!</h1>
+            <p className="mb-2 text-slate-400">Your payment is being verified. Pro access is now active.</p>
+            <p className="mb-8 text-xs text-slate-600">Manual verification typically takes 10-30 minutes.</p>
             <div className="space-y-3">
               <Link href="/builder">
                 <button className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors">
@@ -392,7 +359,7 @@ export default function CheckoutPage() {
                 </button>
               </Link>
               <Link href="/">
-                <button className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-xl transition-colors">
+                <button className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl transition-colors">
                   Back to Home
                 </button>
               </Link>
@@ -405,103 +372,166 @@ export default function CheckoutPage() {
 
   if (selectedNetwork) {
     const coinIcon = selectedCoin?.icon || "usdt";
+    const color = COIN_COLORS[selectedCoin?.symbol || "USDT"] || "#666";
+    const isReady = isConfigured;
+
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col">
-        <header className="border-b border-slate-800 px-5 py-4">
-          <div className="mx-auto max-w-lg flex items-center justify-between">
-            <button onClick={() => setSelectedNetwork(null)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-              <ArrowLeft className="h-4 w-4" /><span className="text-sm font-medium">Back</span>
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        <header className="border-b border-slate-800/50 px-5 py-4">
+          <div className="mx-auto flex max-w-lg items-center justify-between">
+            <button
+              onClick={() => setSelectedNetwork(null)}
+              className="flex items-center gap-2 text-slate-400 hover:text-white transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm font-medium">Back</span>
             </button>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-brand-600 flex items-center justify-center text-white text-xs font-bold">I</div>
-              <span className="font-semibold text-white text-sm">InvoiceGen</span>
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-600 text-white text-xs font-bold">I</div>
+              <span className="text-sm font-semibold text-white">InvoiceGen</span>
             </div>
             <div className="w-16" />
           </div>
         </header>
+
         <div className="flex-1 flex items-start justify-center px-5 py-8">
           <div className="w-full max-w-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-xl overflow-hidden flex items-center justify-center" style={{ backgroundColor: `${ICON_COLORS[coinIcon]}20` }}>
-                <CoinIcon icon={coinIcon} size={32} />
+            <div className="mb-6 flex items-center gap-3">
+              <div
+                className="relative h-12 w-12 flex items-center justify-center rounded-xl"
+                style={{ backgroundColor: `${color}20` }}
+              >
+                <CoinIcon icon={coinIcon} color={color} size={32} />
+                {isReady && (
+                  <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                )}
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">{selectedCoin?.name} ({selectedCoin?.symbol})</h1>
-                <p className="text-sm text-slate-400">{selectedNetwork.name} · {selectedNetwork.shortName}</p>
+                <h1 className="text-lg font-bold text-white">
+                  {selectedCoin?.name} ({selectedCoin?.symbol})
+                </h1>
+                <p className="text-sm text-slate-400">
+                  {selectedNetwork.name} · {selectedNetwork.shortName}
+                </p>
               </div>
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
+            <div className="mb-5 flex items-center justify-between rounded-xl border border-slate-800/50 bg-slate-900/50 px-4 py-3">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-amber-400" />
                 <span className="text-sm text-slate-400">Complete within</span>
               </div>
-              <span className={`text-sm font-mono font-bold ${timeLeft < 300 ? "text-red-400" : "text-amber-400"}`}>
+              <span
+                className={`text-sm font-mono font-bold ${
+                  timeLeft < 300 ? "text-red-400" : "text-amber-400"
+                }`}
+              >
                 {formatTime(timeLeft)}
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 flex flex-col items-center mb-5">
-              {!isConfigured ? (
-                <div className="py-8 text-center">
-                  <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
-                  <p className="font-medium text-slate-900">Address not configured</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Add <code className="bg-slate-100 rounded px-1.5 py-0.5">NEXT_PUBLIC_CRYPTO_{paymentId.toUpperCase().replace(/-/g, "_")}</code> to your .env
-                  </p>
-                </div>
-              ) : (
-                <>
+            {isReady ? (
+              <>
+                <div className="mb-5 flex flex-col items-center rounded-2xl bg-white p-5">
                   <div className="rounded-xl overflow-hidden">
                     <QRCodeSVG value={qrData} size={180} bgColor="#ffffff" fgColor="#0f172a" level="M" />
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">Scan with your {selectedNetwork.name} wallet</p>
-                </>
-              )}
-            </div>
+                  <p className="mt-3 text-xs text-slate-500">
+                    Scan with your {selectedNetwork.name} wallet
+                  </p>
+                </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
-              <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider font-medium">Send exactly</p>
-              <p className="text-2xl font-bold font-mono text-white">{isConfigured ? getCryptoAmount(paymentId) : "—"}</p>
-              <p className="text-sm text-slate-400">≈ ${PRICE_IN_USD} USD</p>
-            </div>
+                <div className="mb-4 rounded-xl border border-slate-800/50 bg-slate-900/50 p-4">
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                    Send exactly
+                  </p>
+                  <p className="font-mono text-2xl font-bold text-white">
+                    {getCryptoAmount(paymentId)}
+                  </p>
+                  <p className="text-sm text-slate-400">≈ ${PRICE_IN_USD} USD</p>
+                </div>
+              </>
+            ) : (
+              <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+                  <AlertTriangle className="h-6 w-6 text-amber-400" />
+                </div>
+                <p className="font-semibold text-white">Wallet address coming soon</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  This payment option is being set up. Try another coin or check back soon.
+                </p>
+                <div className="mt-4">
+                  <p className="text-xs text-slate-500">
+                    Env var:{" "}
+                    <code className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-slate-300">
+                      NEXT_PUBLIC_CRYPTO_{paymentId.toUpperCase().replace(/-/g, "_")}
+                    </code>
+                  </p>
+                </div>
+              </div>
+            )}
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
-              <p className="text-xs text-slate-500 mb-2 uppercase tracking-wider font-medium">{selectedCoin?.symbol} Address ({selectedNetwork.name})</p>
+            <div className="mb-4 rounded-xl border border-slate-800/50 bg-slate-900/50 p-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+                {selectedCoin?.symbol} Address ({selectedNetwork.name})
+              </p>
               <div className="flex items-center gap-2">
-                <p className={`text-sm font-mono break-all text-slate-300 flex-1 ${!isConfigured ? "italic text-slate-600" : ""}`}>
-                  {isConfigured ? address : "Configure wallet address in .env"}
+                <p
+                  className={`flex-1 break-all text-sm font-mono text-slate-300 ${
+                    !isConfigured ? "italic text-slate-600" : ""
+                  }`}
+                >
+                  {isConfigured ? address : "Address not configured"}
                 </p>
                 {isConfigured && (
-                  <button onClick={handleCopy} className="shrink-0 p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors">
-                    {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4 text-slate-400" />}
+                  <button
+                    onClick={handleCopy}
+                    className="shrink-0 rounded-lg bg-slate-800 p-2 transition-colors hover:bg-slate-700"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-emerald-400" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-slate-400" />
+                    )}
                   </button>
                 )}
               </div>
               {explorerUrl && (
-                <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 transition-colors">
+                <a
+                  href={explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 flex items-center gap-1 text-xs text-brand-500 hover:text-brand-400 transition-colors"
+                >
                   View on explorer <ExternalLink className="h-3 w-3" />
                 </a>
               )}
             </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-5 flex items-start gap-3">
-              <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-              <p className="text-xs text-amber-300 leading-relaxed">
-                <strong>Send only on {selectedNetwork.name} ({selectedNetwork.shortName}).</strong>{" "}
-                {selectedCoin?.symbol.includes("USD") ? "Tokens sent on wrong networks are non-recoverable." : "Double-check the network before sending."}
+            <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+              <p className="text-xs leading-relaxed text-amber-300">
+                <strong>
+                  Send only on {selectedNetwork.name} ({selectedNetwork.shortName}).
+                </strong>{" "}
+                {selectedCoin?.symbol.includes("USD")
+                  ? "Tokens sent on wrong networks are non-recoverable."
+                  : "Double-check the network before sending."}
               </p>
             </div>
 
             <button
               onClick={handleConfirm}
-              disabled={!isConfigured}
-              className="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 px-4 font-semibold text-white transition-all duration-200 hover:bg-emerald-600 active:scale-[0.98]"
             >
               <ShieldCheck className="h-4 w-4" />
               I&apos;ve Sent the Payment
             </button>
-            <p className="text-center text-xs text-slate-600 mt-3">Manual verification · Usually confirms in 10-30 min</p>
+            <p className="mt-3 text-center text-xs text-slate-600">
+              Manual verification · Usually confirms in 10-30 min
+            </p>
           </div>
         </div>
       </div>
@@ -510,62 +540,104 @@ export default function CheckoutPage() {
 
   if (selectedCoin && "networks" in selectedCoin) {
     const coin = selectedCoin;
+    const color = COIN_COLORS[coin.symbol] || "#666";
+
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col">
-        <header className="border-b border-slate-800 px-5 py-4">
-          <div className="mx-auto max-w-lg flex items-center justify-between">
-            <button onClick={() => setSelectedCoin(null)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-              <ArrowLeft className="h-4 w-4" /><span className="text-sm font-medium">Back</span>
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        <header className="border-b border-slate-800/50 px-5 py-4">
+          <div className="mx-auto flex max-w-lg items-center justify-between">
+            <button
+              onClick={() => setSelectedCoin(null)}
+              className="flex items-center gap-2 text-slate-400 hover:text-white transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm font-medium">Back</span>
             </button>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-brand-600 flex items-center justify-center text-white text-xs font-bold">I</div>
-              <span className="font-semibold text-white text-sm">InvoiceGen</span>
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-600 text-white text-xs font-bold">I</div>
+              <span className="text-sm font-semibold text-white">InvoiceGen</span>
             </div>
             <div className="w-16" />
           </div>
         </header>
+
         <div className="flex-1 flex items-start justify-center px-5 py-8">
           <div className="w-full max-w-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-xl overflow-hidden flex items-center justify-center" style={{ backgroundColor: `${ICON_COLORS[coin.icon]}20` }}>
-                <CoinIcon icon={coin.icon} size={32} />
+            <div className="mb-6 flex items-center gap-3">
+              <div
+                className="relative h-12 w-12 flex items-center justify-center rounded-xl"
+                style={{ backgroundColor: `${color}20` }}
+              >
+                <CoinIcon icon={coin.icon} color={color} size={32} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">{coin.name} ({coin.symbol})</h1>
+                <h1 className="text-lg font-bold text-white">
+                  {coin.name} ({coin.symbol})
+                </h1>
                 <p className="text-sm text-slate-400">Select a network to continue</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-              {coin.networks.map((net) => {
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {coin.networks.map((net, i) => {
                 const addr = getWalletAddress(net.id);
                 const configured = !!addr;
+                const netColor = COIN_COLORS[net.icon.toUpperCase()] || "#666";
                 return (
                   <button
                     key={net.id}
                     onClick={() => setSelectedNetwork(net)}
-                    className="group bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-slate-600 rounded-xl p-4 text-left transition-all hover:-translate-y-0.5"
+                    className="group relative rounded-xl border border-slate-800/50 bg-slate-900/50 p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-700"
+                    style={{
+                      boxShadow: "none",
+                      transition: "all 200ms ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.boxShadow = `0 0 20px ${netColor}40, 0 8px 16px rgba(0,0,0,0.3)`;
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(-2px) scale(1.02)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                      (e.currentTarget as HTMLElement).style.transform = "";
+                    }}
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="h-7 w-7 rounded-lg overflow-hidden flex items-center justify-center" style={{ backgroundColor: `${ICON_COLORS[net.icon] || "#666"}20` }}>
-                        <CoinIcon icon={net.icon} size={18} />
+                    <div className="mb-2 flex items-center gap-2">
+                      <div
+                        className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden"
+                        style={{ backgroundColor: `${netColor}20` }}
+                      >
+                        <CoinIcon icon={net.icon} color={netColor} size={18} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{net.name}</p>
-                        <p className="text-2xs text-slate-500 font-mono">{net.shortName}</p>
+                        <p className="truncate text-sm font-semibold text-white">{net.name}</p>
+                        <p className="font-mono text-2xs text-slate-500">{net.shortName}</p>
                       </div>
                     </div>
-                    <span className={`text-2xs font-medium px-1.5 py-0.5 rounded ${configured ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-slate-700 text-slate-500"}`}>
-                      {configured ? "Ready" : "Setup required"}
+                    <span
+                      className={`text-2xs inline-flex items-center gap-1 font-medium rounded px-1.5 py-0.5 ${
+                        configured
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : "bg-slate-800 text-slate-500"
+                      }`}
+                    >
+                      {configured ? (
+                        <>
+                          <Check className="h-2.5 w-2.5" /> Ready
+                        </>
+                      ) : (
+                        <>
+                          <Clock3 className="h-2.5 w-2.5" /> Coming soon
+                        </>
+                      )}
                     </span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
-              <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-              <p className="text-xs text-amber-300 leading-relaxed">
+            <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+              <p className="text-xs leading-relaxed text-amber-300">
                 Make sure you send on the correct network.{" "}
                 <strong>{coin.symbol} sent on the wrong network cannot be recovered.</strong>
               </p>
@@ -576,66 +648,180 @@ export default function CheckoutPage() {
     );
   }
 
+
   return (
-    <div className="min-h-screen bg-slate-900">
-      <header className="border-b border-slate-800 px-5 py-4">
-        <div className="mx-auto max-w-4xl flex items-center justify-between">
+    <div className="min-h-screen bg-slate-950">
+      <style>{`
+        @keyframes coinEntrance {
+          from { opacity: 0; transform: translateY(16px) scale(0.95); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 20px var(--glow-color, #666), 0 0 40px var(--glow-color, #666); }
+          50%       { box-shadow: 0 0 30px var(--glow-color, #666), 0 0 60px var(--glow-color, #666); }
+        }
+        @keyframes sparkle {
+          0%   { transform: scale(0) rotate(0deg); opacity: 1; }
+          100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+        }
+        .coin-card:hover { transform: translateY(-2px) scale(1.05); }
+        .coin-card.selected-card { animation: pulse-glow 2s ease-in-out infinite; }
+      `}</style>
+
+      <header className="border-b border-slate-800/50 px-5 py-4">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-brand-600 flex items-center justify-center text-white text-sm font-bold">I</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white text-sm font-bold">
+              I
+            </div>
             <span className="font-bold text-white">InvoiceGen</span>
           </Link>
-          <Link href="/builder" className="text-sm text-slate-400 hover:text-white transition-colors">Try free →</Link>
+          <Link href="/builder" className="text-sm text-slate-400 hover:text-white transition-colors">
+            Try free →
+          </Link>
         </div>
       </header>
 
       <div className="mx-auto max-w-4xl px-5 py-10">
-        <div className="text-center mb-10">
-          <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-brand-600/10 border border-brand-600/20 flex items-center justify-center">
+        <div className="mb-10 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-brand-600/20 bg-brand-600/10">
             <Coins className="h-7 w-7 text-brand-500" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Select Payment Method</h1>
-          <p className="text-slate-400">Choose a cryptocurrency to complete your $29 USD purchase</p>
+          <h1 className="mb-2 text-2xl font-bold text-white">Select Payment Method</h1>
+          <p className="text-slate-400">
+            Choose a cryptocurrency to complete your ${PRICE_IN_USD} USD purchase
+          </p>
         </div>
 
-        {COIN_CATEGORIES.map((category) => (
+        {COIN_CATEGORIES.map((category, catIdx) => (
           <div key={category.label} className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">{category.label}</h2>
+            <div className="mb-4 flex items-center gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+                {category.label}
+              </h2>
               {category.popular && (
-                <span className="inline-flex items-center gap-1 text-2xs font-medium bg-brand-600/10 text-brand-500 border border-brand-600/20 rounded-full px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 rounded-full border border-brand-600/20 bg-brand-600/10 px-2 py-0.5 text-2xs font-medium text-brand-500">
                   <Zap className="h-2.5 w-2.5" /> Popular
                 </span>
               )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {category.coins.map((coin) => {
-                const cfgCount = getCoinConfiguredCount(coin);
-                const total = getCoinTotal(coin);
-                const allReady = cfgCount === total;
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {category.coins.map((coin, coinIdx) => {
+                const color = COIN_COLORS[coin.symbol] || "#666";
+                const isSelected = selectedCoin?.id === coin.id;
                 const isMulti = "networks" in coin;
+                const networkCount = isMulti ? coin.networks.length : 1;
+                const price = prices[coin.symbol];
+
                 return (
                   <button
                     key={coin.id}
                     onClick={() => setSelectedCoin(coin)}
-                    className="group relative bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-slate-600 rounded-xl p-4 text-left transition-all duration-200 hover:shadow-lg hover:shadow-brand-900/20 hover:-translate-y-0.5"
+                    className="coin-card group relative rounded-xl border border-slate-800/50 bg-slate-900/50 p-4 text-left transition-all duration-200"
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        (e.currentTarget as HTMLElement).style.boxShadow = `0 0 15px ${color}40, 0 8px 16px rgba(0,0,0,0.3)`;
+                        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px) scale(1.03)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                        (e.currentTarget as HTMLElement).style.transform = "";
+                      }
+                    }}
+                    style={{
+                      animation: `coinEntrance 400ms ease both`,
+                      animationDelay: `${(catIdx * 5 + coinIdx) * 50}ms`,
+                      ...(isSelected
+                        ? ({
+                            "--glow-color": color,
+                            borderColor: `${color}80`,
+                            boxShadow: `0 0 20px ${color}40, 0 0 40px ${color}20, 0 12px 24px rgba(0,0,0,0.4)`,
+                            transform: "scale(1.05)",
+                          } as React.CSSProperties)
+                        : {}),
+                    }}
                   >
-                    {"popular" in coin && coin.popular && (
-                      <span className="absolute -top-2 -right-2 text-2xs font-medium bg-brand-500 text-white rounded-full px-1.5 py-0.5">Popular</span>
+                    {isSelected && (
+                      <>
+                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 shadow-lg">
+                          <Check className="h-3 w-3 text-white" />
+                        </div>
+                        {[...Array(3)].map((_, si) => (
+                          <div
+                            key={si}
+                            className="absolute pointer-events-none rounded-full"
+                            style={{
+                              inset: 0,
+                              background: `radial-gradient(circle, ${color}30 0%, transparent 70%)`,
+                              animation: `sparkle ${1.5 + si * 0.3}s ease-out ${si * 0.2}s infinite`,
+                            }}
+                          />
+                        ))}
+                      </>
                     )}
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-9 w-9 rounded-lg overflow-hidden flex items-center justify-center" style={{ backgroundColor: `${ICON_COLORS[coin.icon] || "#666"}20` }}>
-                        <CoinIcon icon={coin.icon} size={24} />
+
+                    {coin.badge && !isSelected && (
+                      <span className="absolute -top-2 -right-2 rounded-full bg-amber-500 px-1.5 py-0.5 text-2xs font-medium text-white shadow">
+                        {coin.badge}
+                      </span>
+                    )}
+
+                    <div className="mb-2 flex items-center gap-2.5">
+                      <div
+                        className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden"
+                        style={{ backgroundColor: `${color}20` }}
+                      >
+                        <CoinIcon icon={coin.icon} color={color} size={24} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{coin.symbol}</p>
-                        <p className="text-2xs text-slate-500 truncate">{coin.name}</p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="truncate text-sm font-semibold text-white">{coin.symbol}</p>
+                          {isMulti && (
+                            <ChevronRight className="h-3 w-3 shrink-0 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                          )}
+                        </div>
+                        <p className="truncate text-2xs text-slate-500">{coin.name}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-2xs font-medium px-1.5 py-0.5 rounded ${allReady ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : cfgCount > 0 ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-slate-700 text-slate-500"}`}>
-                        {cfgCount}/{total} ready
-                      </span>
-                      {isMulti && <ChevronRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400 transition-colors" />}
+
+                    <div className="space-y-1.5">
+                      {price > 0 ? (
+                        <p
+                          className="font-mono text-2xs font-medium text-slate-300"
+                          style={{ color: `${color}cc` }}
+                        >
+                          {pricesLoading ? (
+                            <span className="inline-flex items-center gap-1 text-slate-500">
+                              <RefreshCw className="h-2.5 w-2.5 animate-spin" /> Loading...
+                            </span>
+                          ) : (
+                            getCryptoAmount(coin.symbol)
+                          )}
+                        </p>
+                      ) : (
+                        <p className="font-mono text-2xs text-slate-500">
+                          ${PRICE_IN_USD} USD
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        {isMulti ? (
+                          <span className="rounded bg-slate-800 px-1.5 py-0.5 text-2xs text-slate-400">
+                            {networkCount} networks
+                          </span>
+                        ) : (
+                          <span className="rounded bg-slate-800 px-1.5 py-0.5 text-2xs text-slate-400">
+                            {(coin as { network?: string }).network || ""}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </button>
                 );
@@ -644,12 +830,13 @@ export default function CheckoutPage() {
           </div>
         ))}
 
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 flex items-start gap-3">
-          <ShieldCheck className="h-5 w-5 text-brand-500 mt-0.5 shrink-0" />
+        <div className="mt-10 flex items-start gap-3 rounded-xl border border-slate-800/50 bg-slate-900/50 p-5">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
           <div>
-            <p className="font-medium text-white mb-1">Manual confirmation — no account needed</p>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Send any amount to the address shown after selecting a coin and network. Click &ldquo;I&apos;ve Sent the Payment&rdquo; to instantly unlock Pro. Fast, private, no intermediaries.
+            <p className="mb-1 font-medium text-white">Manual confirmation — no account needed</p>
+            <p className="text-sm leading-relaxed text-slate-400">
+              Send any amount to the address shown after selecting a coin and network. Click &ldquo;I&apos;ve Sent
+              the Payment&rdquo; to instantly unlock Pro. Fast, private, no intermediaries.
             </p>
           </div>
         </div>
