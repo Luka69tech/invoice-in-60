@@ -301,7 +301,7 @@ export async function generateInvoicePdf(
   const html = buildInvoiceHtml(invoice, currency);
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line global-require
     const htmlPdf = require("html-pdf-node");
     const file = { content: html };
     const options = {
@@ -314,7 +314,7 @@ export async function generateInvoicePdf(
     return Buffer.from(pdfBufferArray);
   } catch {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // eslint-disable-next-line global-require
       const puppeteer = require("puppeteer");
       const browser = await puppeteer.launch({
         args: [
