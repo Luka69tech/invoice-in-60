@@ -1,36 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const features = [
   {
-    icon: "⚡",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
     title: "AI Line Items",
     desc: "Describe your project and watch AI auto-fill professional line items with rates and descriptions.",
   },
   {
-    icon: "🎨",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+      </svg>
+    ),
     title: "Brand Customization",
     desc: "Upload your logo, set brand colors, and every invoice looks like it came from a design agency.",
   },
   {
-    icon: "📄",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
     title: "PDF Export",
     desc: "One click exports a pixel-perfect, print-ready PDF your clients will actually want to pay.",
   },
   {
-    icon: "🌍",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
     title: "Multi-Currency",
     desc: "Invoice in USD, EUR, GBP, CAD, AUD and 10+ more. Auto-format with locale-appropriate number styles.",
   },
   {
-    icon: "🔒",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+    ),
     title: "Private & Secure",
     desc: "Everything runs in your browser. No accounts, no data stored on our servers. Ever.",
   },
   {
-    icon: "💳",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
     title: "Zero Friction",
     desc: "Create your first invoice free. Pay $29 one-time to unlock unlimited invoices and AI features.",
   },
@@ -38,22 +62,19 @@ const features = [
 
 const testimonials = [
   {
-    quote:
-      "I used to spend 20 minutes formatting invoices in Google Docs. Now I do it in 45 seconds.",
+    quote: "I used to spend 20 minutes formatting invoices in Google Docs. Now I do it in 45 seconds.",
     name: "Sarah Chen",
     role: "Freelance Designer",
     avatar: "SC",
   },
   {
-    quote:
-      "The AI line item feature is scary good. Described my project, got a perfect invoice in one click.",
+    quote: "The AI line item feature is scary good. Described my project, got a perfect invoice in one click.",
     name: "Marcus Rivera",
     role: "Marketing Consultant",
     avatar: "MR",
   },
   {
-    quote:
-      "My clients comment on how professional my invoices look. Worth every penny.",
+    quote: "My clients comment on how professional my invoices look. Worth every penny.",
     name: "Emma Kowalski",
     role: "Copywriter & Strategist",
     avatar: "EK",
@@ -87,389 +108,574 @@ const faqs = [
   },
 ];
 
+const logos = [
+  { name: "Forbes", text: "FORBES" },
+  { name: "TechCrunch", text: "TechCrunch" },
+  { name: "Product Hunt", text: "Product Hunt" },
+  { name: "Indie Hackers", text: "IndieHackers" },
+  { name: "Hacker News", text: "Hacker News" },
+];
+
+function useReveal(threshold = 0.1) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, visible };
+}
+
+function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const { ref, visible } = useReveal(0.1);
+  
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out ${className}`}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(40px)',
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
+  const { ref, visible } = useReveal(0.2);
+  
+  return (
+    <div
+      ref={ref}
+      className="group relative overflow-hidden rounded-2xl border border-slate-100/50 bg-white/80 backdrop-blur-xl p-8 shadow-lg shadow-slate-900/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-900/10"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(30px)',
+        transitionDelay: `${index * 100}ms`,
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-50/50 via-transparent to-violet-50/50 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      
+      <div className="relative z-10">
+        <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-violet-600 text-white shadow-lg shadow-sky-500/30 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+          {feature.icon}
+        </div>
+        
+        <h3 className="mb-3 font-bold text-slate-900 text-lg">{feature.title}</h3>
+        <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
+      </div>
+      
+      <div className="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-sky-400/20 to-violet-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
+    </div>
+  );
+}
+
+function TestimonialCard({ testimonial, index }: { testimonial: typeof testimonials[0]; index: number }) {
+  const { ref, visible } = useReveal(0.2);
+  
+  return (
+    <div
+      ref={ref}
+      className="group relative overflow-hidden rounded-2xl border border-slate-100/50 bg-white/80 backdrop-blur-xl p-8 shadow-lg shadow-slate-900/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(30px)',
+        transitionDelay: `${index * 150}ms`,
+      }}
+    >
+      <div className="relative z-10">
+        <div className="mb-5 flex gap-1">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <svg key={s} className="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+        </div>
+        <p className="mb-6 text-slate-700 text-lg leading-relaxed">&ldquo;{testimonial.quote}&rdquo;</p>
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-sky-500/30">
+            {testimonial.avatar}
+          </div>
+          <div>
+            <p className="font-semibold text-slate-900">{testimonial.name}</p>
+            <p className="text-sm text-slate-500">{testimonial.role}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FaqItem({ faq, index }: { faq: typeof faqs[0]; index: number }) {
+  const [open, setOpen] = useState(false);
+  const { ref, visible } = useReveal(0.2);
+  
+  return (
+    <div
+      ref={ref}
+      className="overflow-hidden rounded-xl border border-slate-200/50 bg-white/80 backdrop-blur-sm transition-all duration-300"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(20px)',
+        transitionDelay: `${index * 80}ms`,
+      }}
+    >
+      <button
+        className="flex w-full items-center justify-between p-6 text-left"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="font-semibold text-slate-900 pr-4">{faq.q}</span>
+        <svg
+          className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-out ${open ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+      >
+        <p className="px-6 pb-6 text-slate-600">{faq.a}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white text-sm font-bold">
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div 
+          className="absolute -top-[40%] -right-[20%] h-[80%] w-[60%] rounded-full bg-gradient-to-br from-sky-100/60 via-sky-50/40 to-violet-100/40 blur-3xl animate-blob-1"
+          style={{ transform: `translate(${mousePos.x}px, ${mousePos.y}px)` }}
+        />
+        <div 
+          className="absolute top-[20%] -left-[20%] h-[60%] w-[50%] rounded-full bg-gradient-to-bl from-violet-100/50 via-sky-50/30 to-sky-100/50 blur-3xl animate-blob-2"
+          style={{ transform: `translate(${-mousePos.x}px, ${-mousePos.y}px)` }}
+        />
+        <div 
+          className="absolute -bottom-[20%] right-[10%] h-[50%] w-[40%] rounded-full bg-gradient-to-tl from-sky-50/40 via-violet-50/30 to-sky-100/40 blur-3xl animate-blob-3"
+          style={{ transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)` }}
+        />
+      </div>
+
+      {/* Navigation */}
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-100/80 bg-white/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-violet-600 text-white font-bold shadow-lg shadow-sky-500/30">
               I
             </div>
-            <span className="font-bold text-slate-900">InvoiceGen</span>
+            <span className="font-bold text-slate-900 text-lg tracking-tight">InvoiceGen</span>
           </div>
-          <div className="flex items-center gap-4">
-            <a
-              href="#features"
-              className="hidden text-sm text-slate-600 hover:text-slate-900 sm:block"
-            >
+          <div className="flex items-center gap-8">
+            <a href="#features" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Features
             </a>
-            <a
-              href="#pricing"
-              className="hidden text-sm text-slate-600 hover:text-slate-900 sm:block"
-            >
+            <a href="#pricing" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Pricing
             </a>
-            <Link href="/builder" className="btn-primary text-sm">
+            <Link href="/builder" className="btn-primary">
               Create Free Invoice
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-32 pb-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-50/50 via-white to-white" />
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-brand-100/50 blur-3xl" />
-        <div className="absolute top-20 -left-40 h-60 w-60 rounded-full bg-brand-100/30 blur-3xl" />
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative pt-32 pb-24 lg:pt-40 lg:pb-32">
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-4xl text-center">
+            <Reveal delay={0}>
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-sky-200/60 bg-sky-50/80 px-5 py-2 text-sm font-medium text-sky-700 shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-500" />
+                </span>
+                No signup required — free to try
+              </div>
+            </Reveal>
 
-        <div className="relative mx-auto max-w-6xl px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm text-brand-700">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
-              </span>
-              No signup required — free to try
-            </div>
+            <Reveal delay={100}>
+              <h1 className="mb-8 text-5xl font-bold tracking-tight text-slate-900 leading-[1.15] lg:text-7xl">
+                Professional invoices in{" "}
+                <span className="text-gradient bg-gradient-to-r from-sky-500 via-sky-600 to-violet-500 bg-clip-text text-transparent">
+                  under 60 seconds
+                </span>
+              </h1>
+            </Reveal>
 
-            <h1 className="mb-6 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl">
-              Professional invoices in{" "}
-              <span className="text-brand-600">under 60 seconds</span>
-            </h1>
+            <Reveal delay={200}>
+              <p className="mx-auto mb-10 max-w-2xl text-xl text-slate-600 leading-relaxed">
+                Stop wasting hours on clunky invoicing tools. Describe your project
+                once — AI fills in the rest. Export a stunning PDF your clients will
+                actually pay faster.
+              </p>
+            </Reveal>
 
-            <p className="mb-10 text-lg text-slate-600 sm:text-xl">
-              Stop wasting hours on clunky invoicing tools. Describe your project
-              once — AI fills in the rest. Export a stunning PDF your clients will
-              actually pay faster.
-            </p>
+            <Reveal delay={300}>
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Link href="/builder" className="btn-primary text-base px-8 py-4 btn-particles">
+                  Create Your First Invoice Free →
+                </Link>
+                <a href="#demo" className="btn-secondary text-base px-8 py-4">
+                  See how it works
+                </a>
+              </div>
+            </Reveal>
 
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/builder" className="btn-primary w-full sm:w-auto sm:text-base">
-                Create Your First Invoice Free →
-              </Link>
-              <a href="#demo" className="btn-secondary w-full sm:w-auto sm:text-base">
-                See how it works
-              </a>
-            </div>
-
-            <p className="mt-4 text-sm text-slate-500">
-              No credit card. No account. Just invoices.
-            </p>
+            <Reveal delay={400}>
+              <p className="mt-6 text-sm text-slate-500">
+                No credit card. No account. Just invoices.
+              </p>
+            </Reveal>
           </div>
 
-          {/* Hero visual */}
-          <div className="mt-16" id="demo">
-            <div className="relative mx-auto max-w-5xl">
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-200/50 overflow-hidden">
-                <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <div className="h-3 w-3 rounded-full bg-red-400" />
-                    <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                    <div className="h-3 w-3 rounded-full bg-green-400" />
+          {/* Hero Visual */}
+          <Reveal delay={500} className="mt-20">
+            <div className="relative mx-auto max-w-5xl" id="demo">
+              <div className="rounded-3xl border border-slate-200/60 bg-white/80 backdrop-blur-xl shadow-2xl shadow-slate-900/10 overflow-hidden">
+                <div className="flex items-center gap-3 border-b border-slate-100/80 bg-slate-50/80 px-5 py-4">
+                  <div className="flex gap-2">
+                    <div className="h-3.5 w-3.5 rounded-full bg-red-400/80" />
+                    <div className="h-3.5 w-3.5 rounded-full bg-amber-400/80" />
+                    <div className="h-3.5 w-3.5 rounded-full bg-emerald-400/80" />
                   </div>
                   <div className="flex-1 text-center">
-                    <span className="rounded-md bg-slate-200 px-3 py-1 text-xs text-slate-500">
+                    <span className="rounded-lg bg-slate-200/60 px-4 py-1.5 text-xs font-medium text-slate-500">
                       invoicegen.com/builder
                     </span>
                   </div>
                 </div>
-                <div className="grid md:grid-cols-2">
+                <div className="grid lg:grid-cols-2">
                   {/* Form side */}
-                  <div className="border-r border-slate-100 p-6">
-                    <div className="mb-4 h-2 w-24 rounded bg-brand-100" />
-                    <div className="space-y-3">
-                      <div className="h-3 w-3/4 rounded bg-slate-100" />
-                      <div className="h-3 w-1/2 rounded bg-slate-100" />
-                      <div className="mt-4 rounded border border-brand-200 bg-brand-50 p-3">
-                        <div className="mb-1 h-2 w-16 rounded bg-brand-200" />
-                        <div className="h-2 w-full rounded bg-brand-100" />
-                        <div className="mt-2 h-2 w-3/4 rounded bg-brand-100" />
+                  <div className="border-r border-slate-100/60 p-8">
+                    <div className="mb-6 h-2 w-28 rounded-full bg-sky-100" />
+                    <div className="space-y-4">
+                      <div className="h-4 w-3/4 rounded-lg bg-slate-100" />
+                      <div className="h-4 w-1/2 rounded-lg bg-slate-100" />
+                      <div className="mt-6 rounded-2xl border border-sky-200/50 bg-sky-50/50 p-5">
+                        <div className="mb-3 h-3 w-20 rounded-full bg-sky-300" />
+                        <div className="h-3 w-full rounded-full bg-sky-200" />
+                        <div className="mt-3 h-3 w-3/4 rounded-full bg-sky-200" />
                       </div>
-                      <div className="mt-4 grid grid-cols-3 gap-2">
+                      <div className="mt-6 grid grid-cols-3 gap-3">
                         {[1, 2, 3].map((i) => (
-                          <div key={i} className="h-8 rounded bg-slate-100" />
+                          <div key={i} className="h-10 rounded-xl bg-slate-100" />
                         ))}
                       </div>
-                      <div className="h-10 rounded-lg bg-brand-600" />
+                      <div className="mt-6 h-12 rounded-xl bg-gradient-to-r from-sky-500 to-violet-600 shadow-lg shadow-sky-500/25" />
                     </div>
                   </div>
                   {/* Preview side */}
-                  <div className="bg-slate-50 p-6">
-                    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                      <div className="mb-4 flex items-start justify-between">
+                  <div className="bg-gradient-to-br from-slate-50/80 to-sky-50/30 p-8">
+                    <div className="rounded-2xl border border-slate-200/50 bg-white p-6 shadow-lg">
+                      <div className="mb-6 flex items-start justify-between">
                         <div>
-                          <div className="h-4 w-20 rounded bg-slate-300" />
-                          <div className="mt-1 h-2 w-32 rounded bg-slate-100" />
+                          <div className="h-5 w-24 rounded-lg bg-slate-300" />
+                          <div className="mt-2 h-3 w-40 rounded-lg bg-slate-100" />
                         </div>
-                        <div className="h-8 w-8 rounded bg-brand-600" />
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-500 to-violet-600 shadow-lg" />
                       </div>
-                      <div className="mb-4 h-2 w-40 rounded bg-slate-200" />
-                      <div className="space-y-2">
+                      <div className="mb-5 h-3 w-48 rounded-lg bg-slate-200" />
+                      <div className="space-y-3">
                         {[1, 2, 3].map((i) => (
                           <div key={i} className="flex justify-between">
-                            <div className="h-2 w-24 rounded bg-slate-100" />
-                            <div className="h-2 w-12 rounded bg-slate-100" />
+                            <div className="h-3 w-32 rounded-lg bg-slate-100" />
+                            <div className="h-3 w-16 rounded-lg bg-slate-100" />
                           </div>
                         ))}
                       </div>
-                      <div className="mt-4 border-t border-slate-100 pt-2">
+                      <div className="mt-6 border-t border-slate-100 pt-4">
                         <div className="flex justify-between">
-                          <div className="h-2 w-10 rounded bg-slate-300" />
-                          <div className="h-2 w-14 rounded bg-slate-300" />
+                          <div className="h-4 w-16 rounded-lg bg-slate-300" />
+                          <div className="h-4 w-20 rounded-lg bg-slate-300" />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+              
+              {/* Floating Elements */}
+              <div className="absolute -top-8 -right-8 h-16 w-16 rounded-2xl bg-gradient-to-br from-sky-500 to-violet-600 shadow-xl shadow-sky-500/30 animate-float flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="absolute -bottom-6 -left-6 h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-amber-500/30 animate-float-delayed flex items-center justify-center">
+                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Social proof bar */}
-      <section className="border-y border-slate-100 bg-slate-50 py-8">
-        <div className="mx-auto max-w-6xl px-6">
-          <p className="mb-6 text-center text-sm font-medium text-slate-500">
+      {/* Social Proof Bar */}
+      <section className="border-y border-slate-100/60 bg-slate-50/50 py-12">
+        <div className="mx-auto max-w-7xl px-6">
+          <p className="mb-8 text-center text-sm font-semibold uppercase tracking-widest text-slate-400">
             Trusted by freelancers and solopreneurs worldwide
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 text-slate-400">
-            {["Forbes", "TechCrunch", "Product Hunt", "Indie Hackers", "Hacker News"].map(
-              (name) => (
-                <span key={name} className="text-sm font-semibold uppercase tracking-wider">
-                  {name}
+          <div className="flex flex-wrap items-center justify-center gap-12">
+            {logos.map((logo, i) => (
+              <Reveal key={logo.name} delay={i * 100}>
+                <span className="text-lg font-bold tracking-wider text-slate-300 transition-colors hover:text-slate-400">
+                  {logo.text}
                 </span>
-              )
-            )}
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-16 text-center">
-            <p className="section-label mb-3">Features</p>
-            <h2 className="mb-4 text-3xl font-bold text-slate-900 sm:text-4xl">
-              Everything you need. Nothing you don&apos;t.
-            </h2>
-            <p className="mx-auto max-w-2xl text-slate-600">
-              Built for the freelancer who values their time. No dashboard
-              bloat, no monthly fees, no learning curve.
-            </p>
+      <section id="features" className="py-28 lg:py-36">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-20 text-center">
+            <Reveal>
+              <p className="section-label mb-4">Features</p>
+            </Reveal>
+            <Reveal delay={100}>
+              <h2 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
+                Everything you need. Nothing you don&apos;t.
+              </h2>
+            </Reveal>
+            <Reveal delay={200}>
+              <p className="mx-auto max-w-2xl text-lg text-slate-600">
+                Built for the freelancer who values their time. No dashboard
+                bloat, no monthly fees, no learning curve.
+              </p>
+            </Reveal>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title} className="card hover:border-brand-200 hover:shadow-md transition-all">
-                <div className="mb-3 text-3xl">{f.icon}</div>
-                <h3 className="mb-2 font-semibold text-slate-900">{f.title}</h3>
-                <p className="text-sm text-slate-600">{f.desc}</p>
-              </div>
+            {features.map((feature, i) => (
+              <FeatureCard key={feature.title} feature={feature} index={i} />
             ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="bg-slate-50 py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-16 text-center">
-            <p className="section-label mb-3">Testimonials</p>
-            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Loved by freelancers
-            </h2>
+      <section className="bg-gradient-to-b from-slate-50/50 to-white py-28 lg:py-36">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-20 text-center">
+            <Reveal>
+              <p className="section-label mb-4">Testimonials</p>
+            </Reveal>
+            <Reveal delay={100}>
+              <h2 className="text-4xl font-bold text-slate-900 lg:text-5xl">
+                Loved by freelancers
+              </h2>
+            </Reveal>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((t) => (
-              <div key={t.name} className="card">
-                <div className="mb-4 flex gap-1">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <svg key={s} className="h-4 w-4 fill-brand-500 text-brand-500" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="mb-4 text-slate-700">&ldquo;{t.quote}&rdquo;</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.role}</p>
-                  </div>
-                </div>
-              </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {testimonials.map((testimonial, i) => (
+              <TestimonialCard key={testimonial.name} testimonial={testimonial} index={i} />
             ))}
           </div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mb-16 text-center">
-            <p className="section-label mb-3">Pricing</p>
-            <h2 className="mb-4 text-3xl font-bold text-slate-900 sm:text-4xl">
-              Pay once. Invoice forever.
-            </h2>
-            <p className="text-slate-600">
-              No subscriptions. No hidden fees. One payment, yours forever.
-            </p>
+      <section id="pricing" className="py-28 lg:py-36">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-20 text-center">
+            <Reveal>
+              <p className="section-label mb-4">Pricing</p>
+            </Reveal>
+            <Reveal delay={100}>
+              <h2 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
+                Pay once. Invoice forever.
+              </h2>
+            </Reveal>
+            <Reveal delay={200}>
+              <p className="text-lg text-slate-600">
+                No subscriptions. No hidden fees. One payment, yours forever.
+              </p>
+            </Reveal>
           </div>
 
-          <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
+          <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2">
             {/* Free tier */}
-            <div className="card">
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-slate-900">Free</h3>
-                <p className="mt-1 text-sm text-slate-500">For trying it out</p>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-slate-900">$0</span>
+            <Reveal delay={300}>
+              <div className="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-8 shadow-xl transition-all hover:-translate-y-2">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative z-10">
+                  <h3 className="mb-2 text-xl font-bold text-slate-900">Free</h3>
+                  <p className="mb-6 text-sm text-slate-500">For trying it out</p>
+                  <div className="mb-8">
+                    <span className="text-5xl font-bold text-slate-900">$0</span>
+                  </div>
+                  <ul className="mb-8 space-y-4">
+                    {[
+                      "3 invoices per month",
+                      "Basic PDF export",
+                      "Manual line item entry",
+                      "Single currency (USD)",
+                      "No branding customization",
+                    ].map((feat) => (
+                      <li key={feat} className="flex items-center gap-3 text-slate-600">
+                        <svg className="h-5 w-5 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/builder" className="btn-secondary w-full block text-center py-3.5">
+                    Get Started Free
+                  </Link>
                 </div>
               </div>
-              <ul className="mb-8 space-y-3">
-                {[
-                  "3 invoices per month",
-                  "Basic PDF export",
-                  "Manual line item entry",
-                  "Single currency (USD)",
-                  "No branding customization",
-                ].map((feat) => (
-                  <li key={feat} className="flex items-start gap-2 text-sm text-slate-600">
-                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {feat}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/builder" className="btn-secondary w-full">
-                Get Started Free
-              </Link>
-            </div>
+            </Reveal>
 
             {/* Pro tier */}
-            <div className="relative border-2 border-brand-500 card">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
-                  Most Popular
-                </span>
-              </div>
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-slate-900">Pro</h3>
-                <p className="mt-1 text-sm text-slate-500">For serious freelancers</p>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-slate-900">$29</span>
-                  <span className="text-sm text-slate-500"> one-time</span>
+            <Reveal delay={400}>
+              <div className="group relative overflow-hidden rounded-3xl border-2 border-sky-500/60 bg-white/80 backdrop-blur-xl p-8 shadow-2xl shadow-sky-500/20 transition-all hover:-translate-y-2 hover:shadow-3xl hover:shadow-sky-500/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-transparent to-violet-50/40 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-gradient-to-r from-sky-500 to-violet-600 px-5 py-1.5 text-xs font-bold text-white shadow-lg shadow-sky-500/30">
+                    Most Popular
+                  </span>
                 </div>
+                <div className="relative z-10">
+                  <h3 className="mb-2 text-xl font-bold text-slate-900">Pro</h3>
+                  <p className="mb-6 text-sm text-slate-500">For serious freelancers</p>
+                  <div className="mb-8">
+                    <span className="text-5xl font-bold text-slate-900">$29</span>
+                    <span className="ml-2 text-sm text-slate-500">one-time</span>
+                  </div>
+                  <ul className="mb-8 space-y-4">
+                    {[
+                      "Unlimited invoices",
+                      "AI line item suggestions",
+                      "Multi-currency support",
+                      "Logo & brand customization",
+                      "Premium PDF templates",
+                      "Auto-tax calculation",
+                      "Share via link",
+                      "Priority support",
+                    ].map((feat) => (
+                      <li key={feat} className="flex items-center gap-3 text-slate-600">
+                        <svg className="h-5 w-5 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/checkout" className="btn-primary w-full block text-center py-3.5">
+                    Buy Pro — $29
+                  </Link>
+                  <p className="mt-4 text-center text-xs text-slate-500">
+                    Crypto payments · BTC, ETH, SOL, USDT & more
+                  </p>
+                </div>
+                
+                <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-gradient-to-br from-sky-400/20 to-violet-500/20 blur-3xl transition-all duration-500 group-hover:scale-150" />
               </div>
-              <ul className="mb-8 space-y-3">
-                {[
-                  "Unlimited invoices",
-                  "AI line item suggestions",
-                  "Multi-currency support",
-                  "Logo & brand customization",
-                  "Premium PDF templates",
-                  "Auto-tax calculation",
-                  "Share via link",
-                  "Priority support",
-                ].map((feat) => (
-                  <li key={feat} className="flex items-start gap-2 text-sm text-slate-600">
-                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {feat}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/checkout" className="btn-primary w-full block text-center">
-                Buy Pro — $29
-              </Link>
-              <p className="mt-3 text-center text-xs text-slate-500">
-                Crypto payments · BTC, ETH, SOL, USDT & more
-              </p>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="bg-slate-50 py-24">
-        <div className="mx-auto max-w-2xl px-6">
-          <div className="mb-12 text-center">
-            <p className="section-label mb-3">FAQ</p>
-            <h2 className="text-3xl font-bold text-slate-900">Questions? Answered.</h2>
+      <section className="bg-gradient-to-b from-slate-50/50 to-white py-28 lg:py-36">
+        <div className="mx-auto max-w-3xl px-6">
+          <div className="mb-16 text-center">
+            <Reveal>
+              <p className="section-label mb-4">FAQ</p>
+            </Reveal>
+            <Reveal delay={100}>
+              <h2 className="text-4xl font-bold text-slate-900">Questions? Answered.</h2>
+            </Reveal>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {faqs.map((faq, i) => (
-              <div key={i} className="rounded-xl border border-slate-200 bg-white">
-                <button
-                  className="flex w-full items-center justify-between p-5 text-left"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                >
-                  <span className="font-medium text-slate-900">{faq.q}</span>
-                  <svg
-                    className={`h-5 w-5 text-slate-400 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {openFaq === i && (
-                  <div className="border-t border-slate-100 px-5 pb-5 pt-3 text-sm text-slate-600">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
+              <FaqItem key={i} faq={faq} index={i} />
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-24">
-        <div className="mx-auto max-w-2xl px-6 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-slate-900 sm:text-4xl">
-            Stop invoicing like it&apos;s 2010.
-          </h2>
-          <p className="mb-8 text-lg text-slate-600">
-            Join thousands of freelancers who create professional invoices in
-            seconds, not hours.
-          </p>
-          <Link href="/builder" className="btn-primary">
-            Create Your First Invoice Free →
-          </Link>
+      <section className="py-28 lg:py-36">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <Reveal>
+            <h2 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
+              Stop invoicing like it&apos;s 2010.
+            </h2>
+          </Reveal>
+          <Reveal delay={100}>
+            <p className="mb-10 text-xl text-slate-600 leading-relaxed">
+              Join thousands of freelancers who create professional invoices in
+              seconds, not hours.
+            </p>
+          </Reveal>
+          <Reveal delay={200}>
+            <Link href="/builder" className="btn-primary text-base px-10 py-4 btn-particles">
+              Create Your First Invoice Free →
+            </Link>
+          </Reveal>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 bg-white py-12">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white text-sm font-bold">
+      <footer className="border-t border-slate-100/60 bg-white py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-violet-600 text-white font-bold shadow-lg shadow-sky-500/30">
                 I
               </div>
-              <span className="font-bold text-slate-900">InvoiceGen</span>
+              <span className="font-bold text-slate-900 text-lg">InvoiceGen</span>
             </div>
-            <div className="flex gap-6 text-sm text-slate-500">
-              <a href="/privacy" className="hover:text-slate-900">Privacy</a>
-              <a href="/terms" className="hover:text-slate-900">Terms</a>
-              <a href="mailto:hello@invoicegen.com" className="hover:text-slate-900">Contact</a>
+            <div className="flex gap-8 text-sm font-medium text-slate-500">
+              <a href="/privacy" className="transition-colors hover:text-slate-900">Privacy</a>
+              <a href="/terms" className="transition-colors hover:text-slate-900">Terms</a>
+              <a href="mailto:hello@invoicegen.com" className="transition-colors hover:text-slate-900">Contact</a>
             </div>
             <p className="text-sm text-slate-400">
-              &copy; {new Date().getFullYear()} InvoiceGen. All rights reserved.
+              © {new Date().getFullYear()} InvoiceGen. All rights reserved.
             </p>
           </div>
         </div>

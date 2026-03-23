@@ -1,8 +1,24 @@
 import type { Metadata } from "next";
+import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Invoice In 60 Seconds — AI-Powered PDF Invoices",
+  title: {
+    default: "Invoice In 60 Seconds — AI-Powered PDF Invoices",
+    template: "%s | InvoiceGen",
+  },
   description:
     "Create stunning, professional PDF invoices in under 60 seconds. AI-powered line item suggestions, zero signup required. Free to try.",
   keywords: [
@@ -34,7 +50,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="font-sans antialiased">
+      <body className={`${inter.variable} ${robotoMono.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>
