@@ -61,6 +61,25 @@ function encodeHTML(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
+function validateInvoiceData(data: unknown): data is InvoiceData {
+  if (typeof data !== "object" || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  
+  if (typeof obj.fromName !== "string" || obj.fromName.length > 500) return false;
+  if (typeof obj.toName !== "string" || obj.toName.length > 500) return false;
+  if (!Array.isArray(obj.items) || obj.items.length === 0 || obj.items.length > 100) return false;
+  
+  for (const item of obj.items) {
+    if (typeof item !== "object" || item === null) return false;
+    const lineItem = item as Record<string, unknown>;
+    if (typeof lineItem.description !== "string" || lineItem.description.length > 500) return false;
+    if (typeof lineItem.quantity !== "string") return false;
+    if (typeof lineItem.rate !== "string") return false;
+  }
+  
+  return true;
+}
+
 export default function SharePage({ params }: { params: Promise<{ data: string }> }) {
   const { data } = use(params);
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
@@ -70,8 +89,31 @@ export default function SharePage({ params }: { params: Promise<{ data: string }
     try {
       const decoded = atob(data);
       const parsed = JSON.parse(decoded);
-      if (parsed.fromName && parsed.toName && Array.isArray(parsed.items)) {
-        setInvoice(parsed);
+      
+      if (validateInvoiceData(parsed)) {
+        const sanitized: InvoiceData = {
+          fromName: parsed.fromName.slice(0, 500),
+          fromEmail: (parsed.fromEmail || "").slice(0, 500),
+          fromAddress: (parsed.fromAddress || "").slice(0, 300),
+          toName: parsed.toName.slice(0, 500),
+          toEmail: (parsed.toEmail || "").slice(0, 500),
+          toAddress: (parsed.toAddress || "").slice(0, 300),
+          invoiceNumber: (parsed.invoiceNumber || "INV-001").slice(0, 20),
+          issueDate: (parsed.issueDate || new Date().toISOString().split("T")[0]).slice(0, 10),
+          dueDate: (parsed.dueDate || "").slice(0, 10),
+          currency: (parsed.currency || "USD").slice(0, 3),
+          notes: (parsed.notes || "").slice(0, 1000),
+          items: parsed.items.slice(0, 100).map((item: LineItem) => ({
+            id: item.id || crypto.randomUUID(),
+            description: item.description.slice(0, 500),
+            quantity: item.quantity,
+            rate: item.rate,
+            amount: item.amount || String(Number(item.quantity) * Number(item.rate)),
+          })),
+          brandColor: (parsed.brandColor || "#10b981").slice(0, 7),
+          logoUrl: "",
+        };
+        setInvoice(sanitized);
       } else {
         setError("Invalid invoice data");
       }

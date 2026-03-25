@@ -40,6 +40,24 @@ const COIN_COLORS: Record<string, string> = {
   ALGO: "#fbcc5c",
 };
 
+function sanitizeSvg(svg: string, size: number): string {
+  let cleaned = svg
+    .replace(/^<svg[^>]*>/, "")
+    .replace(/<\/svg>$/, "")
+    .replace(/width="[^"]*"/, "")
+    .replace(/height="[^"]*"/, "")
+    .replace(/\s(on\w+)=["'][^"']*["']/gi, "")
+    .replace(/href=["']javascript:[^"']*["']/gi, "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "")
+    .replace(/\s*xlink:href=["'][^"']*["']/gi, "")
+    .replace(/\s*data:[^"']*/gi, "");
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">${cleaned}</svg>`;
+}
+
 function CoinSvg({ symbol, size = 32 }: { symbol: string; size?: number }) {
   const [svgContent, setSvgContent] = useState<string | null>(null);
   const s = symbol.toLowerCase();
@@ -50,16 +68,16 @@ function CoinSvg({ symbol, size = 32 }: { symbol: string; size?: number }) {
         if (r.ok) return r.text();
         throw new Error("not found");
       })
-      .then(setSvgContent)
+      .then((text) => setSvgContent(sanitizeSvg(text, size)))
       .catch(() => setSvgContent(null));
-  }, [s]);
+  }, [s, size]);
 
   if (!svgContent) return null;
 
   return (
     <div
       style={{ width: size, height: size, flexShrink: 0 }}
-      dangerouslySetInnerHTML={{ __html: svgContent.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "").replace(/width="[^"]*"/, "").replace(/height="[^"]*"/, "") }}
+      dangerouslySetInnerHTML={{ __html: svgContent }}
     />
   );
 }

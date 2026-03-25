@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, buildRateLimitHeaders } from "@/lib/security/rate-limit";
+import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +38,16 @@ const SYMBOL_TO_ID: Record<string, string> = {
   USDC: "usd-coin",
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(req, { maxRequests: 60, windowMs: 60_000, keyPrefix: "prices" });
+
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait before trying again." },
+      { status: 429, headers: buildRateLimitHeaders(rl) }
+    );
+  }
+
   try {
     const ids = COINGECKO_IDS.join(",");
     const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
@@ -63,19 +74,20 @@ export async function GET() {
       }
     }
 
+    const headers = {
+      ...buildRateLimitHeaders(rl),
+      "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+    };
+
     return NextResponse.json(
       { prices, fetchedAt: Date.now() },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
-        },
-      }
+      { headers }
     );
   } catch (err) {
     console.error("Price fetch error:", err);
     return NextResponse.json(
       { error: "Failed to fetch prices" },
-      { status: 500 }
+      { status: 500, headers: buildRateLimitHeaders(rl) }
     );
   }
 }
