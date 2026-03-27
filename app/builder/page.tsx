@@ -80,6 +80,7 @@ export default function BuilderPage() {
   const [pdfError, setPdfError] = useState("");
   const [aiError, setAiError] = useState("");
   const [shareError, setShareError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showUpsell, setShowUpsell] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isPro, setIsPro] = useState(false);
@@ -122,6 +123,17 @@ export default function BuilderPage() {
   const subtotal = invoice.items.reduce((sum, item) => sum + parseFloat(item.amount || "0"), 0);
   const tax = subtotal * 0;
   const total = subtotal + tax;
+
+  const handleFieldChange = (field: string, value: string) => {
+    setInvoice((p) => ({ ...p, [field]: value }));
+    if (value.trim()) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
 
   const limitDecimals = (value: string, maxDecimals = 2) => {
     const match = value.match(/^\d*\.?\d{0,2}$/);
@@ -200,8 +212,16 @@ export default function BuilderPage() {
 
   const downloadPdf = async () => {
     setPdfError("");
-    if (!invoice.fromName || !invoice.toName) {
-      setPdfError("Please fill in at least your name and client name.");
+    const errors: Record<string, string> = {};
+    if (!invoice.fromName?.trim()) {
+      errors.fromName = "Required";
+    }
+    if (!invoice.toName?.trim()) {
+      errors.toName = "Required";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setPdfError("Please fill in required fields");
       return;
     }
 
@@ -474,12 +494,17 @@ export default function BuilderPage() {
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Your Details</p>
-                <input
-                  className="input-field"
-                  placeholder="Your Name"
-                  value={invoice.fromName}
-                  onChange={(e) => setInvoice((p) => ({ ...p, fromName: e.target.value }))}
-                />
+                <div>
+                  <input
+                    className={`input-field ${fieldErrors.fromName ? "border-red-500" : ""}`}
+                    placeholder="Your Name *"
+                    value={invoice.fromName}
+                    onChange={(e) => handleFieldChange("fromName", e.target.value)}
+                  />
+                  {fieldErrors.fromName && (
+                    <p className="mt-1 text-xs text-red-500">{fieldErrors.fromName}</p>
+                  )}
+                </div>
                 <input
                   className="input-field"
                   placeholder="Email"
@@ -497,12 +522,17 @@ export default function BuilderPage() {
               </div>
               <div className="space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Bill To</p>
-                <input
-                  className="input-field"
-                  placeholder="Client Name"
-                  value={invoice.toName}
-                  onChange={(e) => setInvoice((p) => ({ ...p, toName: e.target.value }))}
-                />
+                <div>
+                  <input
+                    className={`input-field ${fieldErrors.toName ? "border-red-500" : ""}`}
+                    placeholder="Client Name *"
+                    value={invoice.toName}
+                    onChange={(e) => handleFieldChange("toName", e.target.value)}
+                  />
+                  {fieldErrors.toName && (
+                    <p className="mt-1 text-xs text-red-500">{fieldErrors.toName}</p>
+                  )}
+                </div>
                 <input
                   className="input-field"
                   placeholder="Client Email"
