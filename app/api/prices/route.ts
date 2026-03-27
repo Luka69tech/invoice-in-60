@@ -8,34 +8,23 @@ const COINGECKO_IDS = [
   "bitcoin",
   "ethereum",
   "solana",
-  "binancecoin",
-  "matic-network",
-  "avalanche-2",
+  "bitcoin-cash",
   "tron",
-  "the-open-network",
-  "ripple",
   "dogecoin",
   "litecoin",
-  "cardano",
-  "algorand",
 ];
 
 const SYMBOL_TO_ID: Record<string, string> = {
   BTC: "bitcoin",
   ETH: "ethereum",
   SOL: "solana",
-  BNB: "binancecoin",
-  MATIC: "matic-network",
-  AVAX: "avalanche-2",
+  BCH: "bitcoin-cash",
   TRX: "tron",
-  TON: "the-open-network",
-  XRP: "ripple",
   DOGE: "dogecoin",
   LTC: "litecoin",
-  ADA: "cardano",
-  ALGO: "algorand",
   USDT: "tether",
   USDC: "usd-coin",
+  EURC: "eurc",
 };
 
 export async function GET(req: NextRequest) {
