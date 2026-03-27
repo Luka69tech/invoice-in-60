@@ -1,22 +1,19 @@
 /**
  * PDF Generator — Invoice to PDF
+ * Uses jsPDF for serverless-compatible PDF generation
  *
  * Security hardening:
- * - All user input is HTML-entity encoded before interpolation (XSS prevention)
- * - Invoice data validated with Zod schema before processing (A03)
- * - Numeric values are coerced and clamped to prevent injection
- * - Logo URL is validated against allowlist (no external fetch)
- *
- * OWASP A03:2021 — Injection
+ * - All user input is sanitized before PDF generation
+ * - Invoice data validated with Zod schema before processing
  */
+
+import { jsPDF } from "jspdf";
 
 interface CurrencyInfo {
   code: string;
   symbol: string;
   name: string;
 }
-
-// ─── Types (mirrored from validation schema) ─────────────────────────────────
 
 export interface LineItem {
   id: string;
@@ -43,63 +40,10 @@ export interface InvoiceData {
   logoUrl: string;
 }
 
-// ─── HTML Encoding ───────────────────────────────────────────────────────────
-
-/**
- * Encode special HTML characters to prevent XSS in user-supplied text.
- * Only encodes the most dangerous characters — preserves accented letters etc.
- */
-function encodeHTML(str: unknown): string {
+function sanitizeText(str: unknown): string {
   if (str === null || str === undefined) return "";
-  const s = String(str);
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;")
-    .replace(/\//g, "&#x2F;")
-    .replace(/=/g, "&#x3D;")
-    .replace(/`/g, "&#x60;");
+  return String(str).slice(0, 500);
 }
-
-/**
- * Encode for use inside an HTML attribute value.
- */
-function encodeAttr(str: unknown): string {
-  return encodeHTML(str).replace(/"/g, "&quot;");
-}
-
-// ─── Currency Formatting ─────────────────────────────────────────────────────
-
-function formatCurrency(amount: number, currency: CurrencyInfo): string {
-  const formatted = amount.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  return `${currency.symbol}${formatted}`;
-}
-
-// ─── Color Utilities ────────────────────────────────────────────────────────
-
-function hexToRgb(hex: string): string {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return "34, 197, 94";
-  return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`;
-}
-
-/** Validate and normalize a hex color string */
-function normalizeColor(hex: string): string {
-  const match = /^#?([a-f\d]{6})$/i.exec(hex);
-  return match ? `#${match[1].toLowerCase()}` : "#10b981";
-}
-
-/** Validate hex is safe for CSS injection prevention */
-function isValidHexColor(hex: string): boolean {
-  return /^#[0-9A-Fa-f]{6}$/.test(hex);
-}
-
-// ─── Numeric Sanitization ──────────────────────────────────────────────────
 
 function safeNumber(value: unknown, fallback = 0): number {
   const n = parseFloat(String(value));
@@ -107,239 +51,184 @@ function safeNumber(value: unknown, fallback = 0): number {
   return n;
 }
 
-function safeQuantity(value: unknown): string {
-  const n = safeNumber(value, 1);
-  return String(Math.min(9999, Math.max(1, Math.round(n))));
+function formatCurrency(amount: number, symbol: string): string {
+  return `${symbol}${amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
-
-function safeAmount(value: unknown): string {
-  const n = safeNumber(value, 0);
-  return n.toFixed(2);
-}
-
-// ─── HTML Builder ─────────────────────────────────────────────────────────
-
-function buildInvoiceHtml(invoice: InvoiceData, currency: CurrencyInfo): string {
-  // Validate and normalize color to prevent CSS injection
-  let rawColor = normalizeColor(invoice.brandColor || "#10b981");
-  if (!isValidHexColor(rawColor)) {
-    rawColor = "#10b981";
-  }
-  const hex = rawColor;
-  const rgb = hexToRgb(hex);
-
-  // Sanitize all user inputs
-  const fromName = encodeHTML(invoice.fromName || "Your Business");
-  const fromEmail = encodeHTML(invoice.fromEmail || "");
-  const fromAddress = encodeHTML(invoice.fromAddress || "");
-  const toName = encodeHTML(invoice.toName || "Client Name");
-  const toEmail = encodeHTML(invoice.toEmail || "");
-  const toAddress = encodeHTML(invoice.toAddress || "");
-  const invoiceNumber = encodeHTML(invoice.invoiceNumber || "000000");
-  const issueDate = encodeHTML(invoice.issueDate || "");
-  const dueDate = encodeHTML(invoice.dueDate || "");
-  const notes = encodeHTML(invoice.notes || "");
-  const currencyCode = encodeHTML(currency.code || "USD");
-
-  // Calculate totals with sanitized numbers
-  const subtotal = invoice.items.reduce((sum, item) => sum + safeNumber(item.amount), 0);
-  const tax = subtotal * 0;
-  const total = subtotal + tax;
-
-  // Sanitize and limit line items
-  const sanitizedItems = invoice.items.slice(0, 100).map((item) => ({
-    description: encodeHTML(item.description || "—"),
-    quantity: safeQuantity(item.quantity),
-    rate: safeAmount(item.rate),
-    amount: safeAmount(item.amount),
-  }));
-
-  // Build line item rows
-  const itemRows = sanitizedItems
-    .map((item) => {
-      const rateNum = safeNumber(item.rate);
-      const amountNum = safeNumber(item.amount);
-      return `    <tr>
-      <td>${item.description}</td>
-      <td class="qty" style="text-align:center">${item.quantity}</td>
-      <td class="rate" style="text-align:right">${formatCurrency(rateNum, currency)}</td>
-      <td class="amount-col">${formatCurrency(amountNum, currency)}</td>
-    </tr>`;
-    })
-    .join("\n");
-
-  const emailSection = fromEmail
-    ? `    <div class="party-detail">${fromEmail}</div>\n`
-    : "";
-  const fromAddressSection = fromAddress
-    ? `    <div class="party-detail">${fromAddress}</div>\n`
-    : "";
-  const toEmailSection = toEmail
-    ? `    <div class="party-detail">${toEmail}</div>\n`
-    : "";
-  const toAddressSection = toAddress
-    ? `    <div class="party-detail">${toAddress}</div>\n`
-    : "";
-  const notesSection = notes
-    ? `
-<div class="notes">
-  <div class="notes-label">Notes &amp; Payment Terms</div>
-  <div class="notes-text">${notes}</div>
-</div>`
-    : "";
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #1e293b; padding: 48px; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-  .brand { font-size: 28px; font-weight: 800; color: ${hex}; letter-spacing: -0.5px; }
-  .logo-box { width: 48px; height: 48px; border-radius: 12px; background: ${hex}; }
-  .invoice-title { font-size: 36px; font-weight: 800; color: ${hex}; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 8px; }
-  .invoice-meta { text-align: right; font-size: 13px; color: #64748b; line-height: 1.8; }
-  .invoice-meta strong { color: #334155; }
-  .parties { display: flex; gap: 48px; margin-bottom: 40px; }
-  .party-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 8px; }
-  .party-name { font-weight: 700; font-size: 15px; color: #0f172a; margin-bottom: 4px; }
-  .party-detail { font-size: 13px; color: #64748b; line-height: 1.6; white-space: pre-wrap; }
-  .divider { height: 2px; background: rgba(${rgb}, 0.12); margin: 0 0 24px 0; border: none; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-  th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; padding: 0 12px 12px 0; text-align: left; border-bottom: 2px solid rgba(${rgb}, 0.12); }
-  th:last-child { text-align: right; }
-  td { padding: 12px 12px 12px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 13px; color: #334155; }
-  td:last-child { text-align: right; font-family: 'Courier New', monospace; }
-  .qty, .rate { text-align: center !important; font-family: 'Courier New', monospace; }
-  .amount-col { text-align: right; font-weight: 600; color: #0f172a !important; font-family: 'Courier New', monospace; }
-  .totals { display: flex; justify-content: flex-end; }
-  .totals-table { width: 280px; }
-  .totals-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-  .totals-row.total { border-bottom: none; border-top: 2px solid rgba(${rgb}, 0.12); margin-top: 4px; padding-top: 12px; font-weight: 700; font-size: 16px; color: ${hex}; }
-  .notes { margin-top: 32px; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid ${hex}; }
-  .notes-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 6px; }
-  .notes-text { font-size: 13px; color: #64748b; white-space: pre-wrap; line-height: 1.6; }
-  .footer { margin-top: 48px; text-align: center; font-size: 11px; color: #94a3b8; }
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div>
-    <div class="brand">${fromName}</div>
-${emailSection}${fromAddressSection}  </div>
-  <div class="logo-box"></div>
-</div>
-
-<div style="margin-bottom: 40px;">
-  <div class="invoice-title">Invoice</div>
-  <div class="invoice-meta">
-    <div><strong>#${invoiceNumber}</strong></div>
-    <div>Issue Date: ${issueDate}</div>
-    <div>Due Date: ${dueDate}</div>
-    <div>Currency: ${currencyCode}</div>
-  </div>
-</div>
-
-<div class="parties">
-  <div>
-    <div class="party-label">Bill To</div>
-    <div class="party-name">${toName}</div>
-${toEmailSection}${toAddressSection}  </div>
-</div>
-
-<hr class="divider">
-
-<table>
-  <thead>
-    <tr>
-      <th style="width: 56%">Description</th>
-      <th class="qty" style="width: 12%">Qty</th>
-      <th class="rate" style="width: 16%">Rate</th>
-      <th style="width: 16%">Amount</th>
-    </tr>
-  </thead>
-  <tbody>
-${itemRows}
-  </tbody>
-</table>
-
-<div class="totals">
-  <div class="totals-table">
-    <div class="totals-row">
-      <span>Subtotal</span>
-      <span>${formatCurrency(subtotal, currency)}</span>
-    </div>
-    <div class="totals-row">
-      <span>Tax (0%)</span>
-      <span>${formatCurrency(tax, currency)}</span>
-    </div>
-    <div class="totals-row total">
-      <span>Total Due</span>
-      <span>${formatCurrency(total, currency)} ${currencyCode}</span>
-    </div>
-  </div>
-</div>
-
-${notesSection}
-
-<div class="footer">
-  <p>Generated with InvoiceGen</p>
-</div>
-
-</body>
-</html>`;
-}
-
-// ─── PDF Generation ────────────────────────────────────────────────────────
 
 export async function generateInvoicePdf(
   invoice: InvoiceData,
   currency: CurrencyInfo
 ): Promise<Buffer> {
-  const html = buildInvoiceHtml(invoice, currency);
-
   try {
-    // eslint-disable-next-line global-require
-    const htmlPdf = require("html-pdf-node");
-    const file = { content: html };
-    const options = {
-      format: "A4",
-      printBackground: true,
-      margin: { top: 0, bottom: 0, left: 0, right: 0 },
-    };
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
+    let y = margin;
 
-    const pdfBufferArray = await htmlPdf.fileToPdf(file, options);
-    return Buffer.from(pdfBufferArray);
-  } catch {
-    try {
-      // eslint-disable-next-line global-require
-      const puppeteer = require("puppeteer");
-      const browser = await puppeteer.launch({
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-accelerated-2d-canvas",
-          "--no-first-run",
-          "--no-zygote",
-          "--disable-gpu",
-        ],
-      });
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
-      const pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: { top: 0, bottom: 0, left: 0, right: 0 },
-      });
-      await browser.close();
-      return Buffer.from(pdfBuffer);
-    } catch (err) {
-      throw new Error(
-        `PDF generation failed. Ensure html-pdf-node or Puppeteer is available.`
-      );
+    const brandColor = invoice.brandColor || "#10b981";
+    const rgb = hexToRgb(brandColor);
+    doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+    doc.setTextColor(rgb.r, rgb.g, rgb.b);
+
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text(sanitizeText(invoice.fromName || "Your Business"), margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    if (invoice.fromEmail) {
+      doc.text(sanitizeText(invoice.fromEmail), margin, y);
+      y += 5;
     }
+    if (invoice.fromAddress) {
+      const addressLines = doc.splitTextToSize(sanitizeText(invoice.fromAddress), contentWidth * 0.4);
+      doc.text(addressLines, margin, y);
+      y += addressLines.length * 4;
+    }
+    y += 10;
+
+    doc.setFontSize(32);
+    doc.setTextColor(rgb.r, rgb.g, rgb.b);
+    doc.text("INVOICE", pageWidth - margin, margin + 10, { align: "right" });
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    const metaY = margin + 20;
+    doc.text(`#${sanitizeText(invoice.invoiceNumber || "000000")}`, pageWidth - margin, metaY, { align: "right" });
+    doc.text(`Issue: ${sanitizeText(invoice.issueDate || "")}`, pageWidth - margin, metaY + 5, { align: "right" });
+    doc.text(`Due: ${sanitizeText(invoice.dueDate || "")}`, pageWidth - margin, metaY + 10, { align: "right" });
+    doc.text(`Currency: ${currency.code}`, pageWidth - margin, metaY + 15, { align: "right" });
+
+    y = Math.max(y, metaY + 30);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 15;
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont("helvetica", "bold");
+    doc.text("BILL TO", margin, y);
+    y += 6;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text(sanitizeText(invoice.toName || "Client"), margin, y);
+    y += 5;
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    if (invoice.toEmail) {
+      doc.text(sanitizeText(invoice.toEmail), margin, y);
+      y += 5;
+    }
+    if (invoice.toAddress) {
+      const toAddressLines = doc.splitTextToSize(sanitizeText(invoice.toAddress), contentWidth * 0.4);
+      doc.text(toAddressLines, margin, y);
+      y += toAddressLines.length * 4;
+    }
+
+    y += 15;
+
+    doc.setFillColor(245, 245, 245);
+    doc.rect(margin, y - 3, contentWidth, 8, "F");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont("helvetica", "bold");
+    doc.text("DESCRIPTION", margin + 2, y + 2);
+    doc.text("QTY", margin + contentWidth * 0.5, y + 2);
+    doc.text("RATE", margin + contentWidth * 0.65, y + 2);
+    doc.text("AMOUNT", pageWidth - margin - 2, y + 2, { align: "right" });
+    y += 10;
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+
+    let subtotal = 0;
+    for (const item of invoice.items.slice(0, 50)) {
+      const qty = safeNumber(item.quantity);
+      const rate = safeNumber(item.rate);
+      const amount = safeNumber(item.amount);
+      subtotal += amount;
+
+      const descLines = doc.splitTextToSize(sanitizeText(item.description) || "—", contentWidth * 0.45);
+      doc.text(descLines.slice(0, 2), margin, y);
+      
+      doc.text(String(qty), margin + contentWidth * 0.5, y);
+      doc.text(formatCurrency(rate, currency.symbol), margin + contentWidth * 0.65, y);
+      doc.text(formatCurrency(amount, currency.symbol), pageWidth - margin - 2, y, { align: "right" });
+      
+      y += Math.max(descLines.slice(0, 2).length * 4, 6);
+
+      if (y > 250) {
+        doc.addPage();
+        y = margin;
+      }
+    }
+
+    y += 5;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin + contentWidth * 0.6, y, pageWidth - margin, y);
+    y += 8;
+
+    doc.setFontSize(11);
+    doc.text("Subtotal:", margin + contentWidth * 0.6, y);
+    doc.text(formatCurrency(subtotal, currency.symbol), pageWidth - margin - 2, y, { align: "right" });
+    y += 6;
+
+    const tax = 0;
+    doc.text("Tax (0%):", margin + contentWidth * 0.6, y);
+    doc.text(formatCurrency(tax, currency.symbol), pageWidth - margin - 2, y, { align: "right" });
+    y += 8;
+
+    doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+    doc.setLineWidth(0.5);
+    doc.line(margin + contentWidth * 0.6, y, pageWidth - margin, y);
+    y += 6;
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(rgb.r, rgb.g, rgb.b);
+    doc.text("Total:", margin + contentWidth * 0.6, y);
+    doc.text(`${formatCurrency(subtotal + tax, currency.symbol)} ${currency.code}`, pageWidth - margin - 2, y, { align: "right" });
+
+    if (invoice.notes) {
+      y += 20;
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "bold");
+      doc.text("NOTES", margin, y);
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      const notesLines = doc.splitTextToSize(sanitizeText(invoice.notes), contentWidth);
+      doc.text(notesLines.slice(0, 10), margin, y);
+    }
+
+    y = 280;
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text("Generated with InvoiceGen", pageWidth / 2, y, { align: "center" });
+
+    const pdfBuffer = doc.output("arraybuffer");
+    return Buffer.from(pdfBuffer);
+  } catch (err) {
+    console.error("PDF generation error:", err);
+    throw new Error("PDF generation failed. Please try again.");
   }
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return { r: 16, g: 185, b: 129 };
+  return {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16),
+  };
 }
