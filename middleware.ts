@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, buildRateLimitHeaders } from "@/lib/security/rate-limit";
 
 export function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+
+  if (path.startsWith("/api/webhooks/paymento")) {
+    const res = NextResponse.next();
+    res.headers.set("X-Frame-Options", "DENY");
+    res.headers.set("X-Content-Type-Options", "nosniff");
+    return res;
+  }
+
   const rateResult = checkRateLimit(req, { maxRequests: 100, windowMs: 60 * 1000, keyPrefix: "global" });
 
   if (!rateResult.allowed) {
