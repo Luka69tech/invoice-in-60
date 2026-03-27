@@ -15,6 +15,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://invoice-in-60.vercel.app"),
   title: {
     default: "Invoice In 60 Seconds — AI-Powered PDF Invoices",
     template: "%s | InvoiceGen",
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
     description:
       "Create stunning, professional PDF invoices in under 60 seconds. AI-powered suggestions. No signup.",
     type: "website",
+    images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",

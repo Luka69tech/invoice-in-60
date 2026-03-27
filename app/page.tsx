@@ -104,7 +104,7 @@ const faqs = [
   },
   {
     q: "Can I get a refund?",
-    a: "Yes. Contact us within 14 days and we'll refund you. No questions asked.",
+    a: "All sales are final. Please try the free version first to ensure it meets your needs.",
   },
 ];
 
@@ -672,6 +672,7 @@ export default function HomePage() {
             <div className="flex gap-8 text-sm font-medium text-slate-500">
               <a href="/privacy" className="transition-colors hover:text-slate-900">Privacy</a>
               <a href="/terms" className="transition-colors hover:text-slate-900">Terms</a>
+              <a href="/refund" className="transition-colors hover:text-slate-900">Refunds</a>
               <a href="mailto:hello@invoicegen.com" className="transition-colors hover:text-slate-900">Contact</a>
             </div>
             <p className="text-sm text-slate-400">

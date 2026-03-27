@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const paymentData = await redis.get(`paymento_payment_${orderId}`);
 
     if (paymentData) {
-      const parsed = JSON.parse(paymentData as string);
+      const parsed = typeof paymentData === 'string' ? JSON.parse(paymentData) : paymentData;
       return NextResponse.json(
         { paid: true, data: parsed },
         { headers: SECURITY_HEADERS }
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[check-payment] Error:", err);
     return NextResponse.json(
-      { error: "Check failed" },
+      { error: "Check failed", details: err instanceof Error ? err.message : String(err) },
       { status: 500, headers: SECURITY_HEADERS }
     );
   }
