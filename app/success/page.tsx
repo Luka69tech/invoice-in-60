@@ -21,7 +21,7 @@ export default function SuccessPage() {
           Payment confirmed. You now have unlimited access to all Pro features.
         </p>
         <p className="mb-8 text-sm text-slate-500">
-          Payment will be verified manually. Pro access is instant.
+          Payment verified automatically. Pro access is now active.
         </p>
         <div className="flex flex-col gap-3">
           <Link href="/builder" className="btn-primary">
