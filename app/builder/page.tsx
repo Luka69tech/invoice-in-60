@@ -123,16 +123,25 @@ export default function BuilderPage() {
   const tax = subtotal * 0;
   const total = subtotal + tax;
 
+  const limitDecimals = (value: string, maxDecimals = 2) => {
+    const match = value.match(/^\d*\.?\d{0,2}$/);
+    if (match) return value;
+    const parts = value.split(".");
+    if (parts.length === 1) return value;
+    return `${parts[0]}.${parts[1].slice(0, maxDecimals)}`;
+  };
+
   const updateItem = useCallback((id: string, field: keyof LineItem, value: string) => {
+    const sanitized = field === "description" ? value : limitDecimals(value);
     setInvoice((prev) => ({
       ...prev,
       items: prev.items.map((item) => {
         if (item.id !== id) return item;
-        const updated = { ...item, [field]: value };
+        const updated = { ...item, [field]: sanitized };
         if (field === "quantity" || field === "rate") {
           updated.amount = calcAmount(
-            field === "quantity" ? value : updated.quantity,
-            field === "rate" ? value : updated.rate
+            field === "quantity" ? sanitized : updated.quantity,
+            field === "rate" ? sanitized : updated.rate
           );
         }
         return updated;
@@ -534,20 +543,18 @@ export default function BuilderPage() {
                   <input
                     className="input-field col-span-2"
                     placeholder="1"
-                    type="number"
-                    min="0"
-                    step="0.5"
+                    type="text"
+                    inputMode="decimal"
                     value={item.quantity}
-                    onChange={(e) => updateItem(item.id, "quantity", e.target.value)}
+                    onChange={(e) => updateItem(item.id, "quantity", limitDecimals(e.target.value))}
                   />
                   <input
                     className="input-field col-span-2"
                     placeholder="0.00"
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     value={item.rate}
-                    onChange={(e) => updateItem(item.id, "rate", e.target.value)}
+                    onChange={(e) => updateItem(item.id, "rate", limitDecimals(e.target.value))}
                   />
                   <div className="col-span-2 flex items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-mono text-slate-700">
                     {currency.symbol}{item.amount}
