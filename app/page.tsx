@@ -529,7 +529,7 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={200}>
               <p className="text-lg text-slate-600">
-                Start free, upgrade when you're ready. Cancel anytime.
+                Start free, upgrade when you&apos;re ready. Cancel anytime.
               </p>
             </Reveal>
           </div>
