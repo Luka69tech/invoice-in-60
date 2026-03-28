@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { redis } from "@/lib/redis";
 import { SECURITY_HEADERS } from "@/lib/security/headers";
+import { sendInvoiceEmail } from "@/lib/email";
+import { generateInvoicePdf } from "@/lib/pdf-generator";
 
 const PAYMENTO_STATUS: Record<number, string> = {
   0: "Initialize",
@@ -62,6 +64,7 @@ export async function POST(req: NextRequest) {
       });
 
       const invoiceId = additionalDataObj["invoiceId"] || OrderId;
+      const customerEmail = additionalDataObj["customerEmail"];
       console.log(`[paymento-webhook] Payment confirmed for ${invoiceId}, marking as paid...`);
 
       try {
@@ -75,6 +78,48 @@ export async function POST(req: NextRequest) {
         await redis.expire(key, 86400 * 7);
 
         console.log(`[paymento-webhook] Payment stored for ${invoiceId}`);
+
+        // Send confirmation email if customer email is available
+        if (customerEmail && customerEmail.includes("@")) {
+          console.log(`[paymento-webhook] Sending confirmation email to ${customerEmail}`);
+          
+          // Generate a simple receipt PDF
+          const dummyInvoice = {
+            fromName: "InvoiceGen",
+            fromEmail: "noreply@invoicein60.com",
+            fromAddress: "https://invoice-in-60.vercel.app",
+            toName: "Customer",
+            toEmail: customerEmail,
+            toAddress: "",
+            invoiceNumber: invoiceId,
+            issueDate: new Date().toISOString().split("T")[0],
+            dueDate: new Date().toISOString().split("T")[0],
+            currency: "USD",
+            notes: "Thank you for your purchase!",
+            items: [
+              { id: "1", description: "InvoiceGen Pro - Lifetime Access", quantity: "1", rate: "29", amount: "29.00" }
+            ],
+            brandColor: "#22c55e",
+            logoUrl: "",
+          };
+          
+          try {
+            const pdfBuffer = await generateInvoicePdf(dummyInvoice, { code: "USD", symbol: "$", name: "US Dollar" });
+            const pdfBase64 = Buffer.from(pdfBuffer).toString("base64");
+            
+            await sendInvoiceEmail({
+              to: customerEmail,
+              invoiceNumber: invoiceId,
+              customerName: "Customer",
+              amount: "29.00",
+              currency: "$",
+              pdfBase64,
+            });
+            console.log(`[paymento-webhook] Email sent successfully to ${customerEmail}`);
+          } catch (emailErr) {
+            console.error("[paymento-webhook] Failed to send email:", emailErr);
+          }
+        }
       } catch (redisErr) {
         console.error("[paymento-webhook] Redis error:", redisErr);
       }

@@ -18,6 +18,7 @@ function CheckoutContent() {
 
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (success && orderId) {
@@ -34,6 +35,12 @@ function CheckoutContent() {
   }, [success, orderId]);
 
   const handlePayment = async () => {
+    if (!email.trim()) {
+      setErrorMessage("Please enter your email address");
+      setPaymentState("error");
+      return;
+    }
+    
     setPaymentState("loading");
     setErrorMessage("");
 
@@ -46,6 +53,7 @@ function CheckoutContent() {
           fiatAmount: PRICE_IN_USD.toString(),
           fiatCurrency: "USD",
           returnUrl: `${window.location.origin}/checkout?success=true&orderId={orderId}`,
+          customerEmail: email,
         }),
       });
 
@@ -160,11 +168,22 @@ function CheckoutContent() {
             ))}
           </div>
 
-          <div className="border-t border-slate-800 pt-4">
+          <div className="border-t border-slate-800 pt-4 mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-400">Total</span>
               <span className="text-lg font-bold text-white">${PRICE_IN_USD} USD</span>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">Email for receipt</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+            />
           </div>
         </div>
 

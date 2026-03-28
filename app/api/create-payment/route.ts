@@ -5,7 +5,7 @@ import { SECURITY_HEADERS } from "@/lib/security/headers";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, fiatAmount, fiatCurrency, returnUrl } = body;
+    const { orderId, fiatAmount, fiatCurrency, returnUrl, customerEmail } = body;
 
     if (!orderId || !fiatAmount || !fiatCurrency) {
       return NextResponse.json(
@@ -23,8 +23,10 @@ export async function POST(req: NextRequest) {
       returnUrl: actualReturnUrl,
       additionalData: {
         source: "invoicegen",
+        customerEmail: customerEmail || "",
       },
       speed: 0,
+      email: customerEmail,
     });
 
     const paymentUrl = getPaymentUrl(token);
