@@ -41,6 +41,17 @@ const currencies = [
   { code: "JPY", symbol: "¥", name: "Japanese Yen" },
   { code: "INR", symbol: "₹", name: "Indian Rupee" },
   { code: "BRL", symbol: "R$", name: "Brazilian Real" },
+  { code: "CHF", symbol: "CHF", name: "Swiss Franc" },
+  { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
+  { code: "SGD", symbol: "S$", name: "Singapore Dollar" },
+  { code: "DKK", symbol: "DKK", name: "Danish Krone" },
+  { code: "NOK", symbol: "NOK", name: "Norwegian Krone" },
+  { code: "SEK", symbol: "SEK", name: "Swedish Krona" },
+  { code: "NZD", symbol: "NZ$", name: "New Zealand Dollar" },
+  { code: "HKD", symbol: "HK$", name: "Hong Kong Dollar" },
+  { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
+  { code: "KRW", symbol: "₩", name: "South Korean Won" },
+  { code: "ZAR", symbol: "R", name: "South African Rand" },
 ];
 
 function generateId() {
