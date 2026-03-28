@@ -195,9 +195,8 @@ function CheckoutContent() {
             }`}
           >
             <span
-              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${
-                isAnnual ? "translate-x-7" : "translate-x-1"
-              }`}
+              className="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200"
+              style={{ left: isAnnual ? "28px" : "4px" }}
             />
           </button>
           <span className={`text-sm ${isAnnual ? "text-white" : "text-slate-500"}`}>
