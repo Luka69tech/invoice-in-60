@@ -260,6 +260,7 @@ function FaqItem({ faq, index }: { faq: typeof faqs[0]; index: number }) {
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [annual, setAnnual] = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
@@ -517,51 +518,61 @@ export default function HomePage() {
       {/* Pricing */}
       <section id="pricing" className="py-28 lg:py-36">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-20 text-center">
+          <div className="mb-16 text-center">
             <Reveal>
               <p className="section-label mb-4">Pricing</p>
             </Reveal>
             <Reveal delay={100}>
               <h2 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
-                Pay once. Invoice forever.
+                Simple pricing, no surprises
               </h2>
             </Reveal>
             <Reveal delay={200}>
               <p className="text-lg text-slate-600">
-                No subscriptions. No hidden fees. One payment, yours forever.
+                Start free, upgrade when you're ready. Cancel anytime.
               </p>
             </Reveal>
           </div>
 
-          <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2">
+          {/* Billing Toggle */}
+          <div className="mb-12 flex items-center justify-center gap-4">
+            <span className="text-sm font-medium text-slate-500">Monthly</span>
+            <button
+              onClick={() => setAnnual(!annual)}
+              className={`relative h-8 w-14 rounded-full transition-colors ${annual ? "bg-sky-600" : "bg-slate-300"}`}
+            >
+              <span
+                className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${annual ? "left-7" : "left-1"}`}
+                style={{ left: annual ? "28px" : "4px" }}
+              />
+            </button>
+            <span className="text-sm font-medium text-slate-900">
+              Annual <span className="text-sky-600">(Save up to 30%)</span>
+            </span>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
             {/* Free tier */}
             <Reveal delay={300}>
-              <div className="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-8 shadow-xl transition-all hover:-translate-y-2">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all hover:-translate-y-2 hover:shadow-xl">
                 <div className="relative z-10">
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Free</h3>
-                  <p className="mb-6 text-sm text-slate-500">For trying it out</p>
-                  <div className="mb-8">
-                    <span className="text-5xl font-bold text-slate-900">$0</span>
+                  <p className="mb-4 text-sm text-slate-500">For trying it out</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-slate-900">$0</span>
                   </div>
-                  <ul className="mb-8 space-y-4">
-                    {[
-                      "3 invoices per month",
-                      "Basic PDF export",
-                      "Manual line item entry",
-                      "Single currency (USD)",
-                      "No branding customization",
-                    ].map((feat) => (
-                      <li key={feat} className="flex items-center gap-3 text-slate-600">
-                        <svg className="h-5 w-5 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <ul className="mb-6 space-y-3">
+                    {["3 invoices per month", "Watermark on PDF", "Standard templates", "PDF download only"].map((feat) => (
+                      <li key={feat} className="flex items-center gap-2 text-sm text-slate-600">
+                        <svg className="h-4 w-4 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         {feat}
                       </li>
                     ))}
                   </ul>
-                  <Link href="/builder" className="btn-secondary w-full block text-center py-3.5">
-                    Get Started Free
+                  <Link href="/builder" className="block w-full rounded-xl border border-slate-200 py-3 text-center font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                    Start Free
                   </Link>
                 </div>
               </div>
@@ -569,50 +580,74 @@ export default function HomePage() {
 
             {/* Pro tier */}
             <Reveal delay={400}>
-              <div className="group relative overflow-hidden rounded-3xl border-2 border-sky-500/60 bg-white/80 backdrop-blur-xl p-8 shadow-2xl shadow-sky-500/20 transition-all hover:-translate-y-2 hover:shadow-3xl hover:shadow-sky-500/30">
-                <div className="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-transparent to-violet-50/40 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-gradient-to-r from-sky-500 to-violet-600 px-5 py-1.5 text-xs font-bold text-white shadow-lg shadow-sky-500/30">
+              <div className="relative overflow-hidden rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-2">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                     Most Popular
                   </span>
                 </div>
                 <div className="relative z-10">
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Pro</h3>
-                  <p className="mb-6 text-sm text-slate-500">For serious freelancers</p>
-                  <div className="mb-8">
-                    <span className="text-5xl font-bold text-slate-900">$29</span>
-                    <span className="ml-2 text-sm text-slate-500">one-time</span>
+                  <p className="mb-4 text-sm text-slate-500">For growing freelancers</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-slate-900">${annual ? 79 : 9}</span>
+                    <span className="ml-2 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
                   </div>
-                  <ul className="mb-8 space-y-4">
-                    {[
-                      "Unlimited invoices",
-                      "AI line item suggestions",
-                      "Multi-currency support",
-                      "Logo & brand customization",
-                      "Premium PDF templates",
-                      "Auto-tax calculation",
-                      "Share via link",
-                      "Priority support",
-                    ].map((feat) => (
-                      <li key={feat} className="flex items-center gap-3 text-slate-600">
-                        <svg className="h-5 w-5 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {annual && (
+                    <p className="mb-4 text-sm text-sky-600">Save $29/year</p>
+                  )}
+                  <ul className="mb-6 space-y-3">
+                    {["Unlimited invoices", "No watermark", "Custom branding", "Email PDF delivery", "Priority support"].map((feat) => (
+                      <li key={feat} className="flex items-center gap-2 text-sm text-slate-600">
+                        <svg className="h-4 w-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         {feat}
                       </li>
                     ))}
                   </ul>
-                  <Link href="/checkout" className="btn-primary w-full block text-center py-3.5">
-                    Buy Pro — $29
+                  <Link href="/checkout?plan=pro" className="block w-full rounded-xl bg-sky-600 py-3 text-center font-semibold text-white hover:bg-sky-700 transition-colors">
+                    Get Pro
                   </Link>
-                  <p className="mt-4 text-center text-xs text-slate-500">
-                    Crypto payments · BTC, ETH, SOL, USDT & more
-                  </p>
                 </div>
-                
-                <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-gradient-to-br from-sky-400/20 to-violet-500/20 blur-3xl transition-all duration-500 group-hover:scale-150" />
               </div>
             </Reveal>
+
+            {/* Business tier */}
+            <Reveal delay={500}>
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all hover:-translate-y-2 hover:shadow-xl">
+                <div className="relative z-10">
+                  <h3 className="mb-2 text-xl font-bold text-slate-900">Business</h3>
+                  <p className="mb-4 text-sm text-slate-500">For teams and agencies</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-slate-900">${annual ? 159 : 19}</span>
+                    <span className="ml-2 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
+                  </div>
+                  {annual && (
+                    <p className="mb-4 text-sm text-sky-600">Save $69/year</p>
+                  )}
+                  <ul className="mb-6 space-y-3">
+                    {["Everything in Pro", "Up to 3 team members", "Client portal", "Auto reminders", "API access"].map((feat) => (
+                      <li key={feat} className="flex items-center gap-2 text-sm text-slate-600">
+                        <svg className="h-4 w-4 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/checkout?plan=business" className="block w-full rounded-xl border border-slate-200 py-3 text-center font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                    Get Business
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+              View full comparison →
+            </Link>
           </div>
         </div>
       </section>

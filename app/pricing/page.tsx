@@ -55,11 +55,20 @@ const plans = [
   },
 ];
 
-const planFeatures = {
-  free: ["3 invoices/month", "Watermark", "Basic templates", "PDF only"],
-  pro: ["Unlimited", "No watermark", "Custom branding", "Email delivery", "History", "Crypto payments"],
-  business: ["Pro features", "3 team members", "Client portal", "Reminders", "Recurring", "API"],
-};
+// Feature comparison: true = yes/green, false = no/red, "partial" = partial
+const featureComparison = [
+  { feature: "Invoices per month", free: "3", pro: "Unlimited", business: "Unlimited" },
+  { feature: "Watermark", free: true, pro: false, business: false },
+  { feature: "Custom branding", free: false, pro: true, business: true },
+  { feature: "Email PDF delivery", free: false, pro: true, business: true },
+  { feature: "Invoice history", free: false, pro: true, business: true },
+  { feature: "Crypto payments", free: false, pro: true, business: true },
+  { feature: "Team members", free: "1", pro: "1", business: "Up to 3" },
+  { feature: "Client portal", free: false, pro: false, business: true },
+  { feature: "Auto reminders", free: false, pro: false, business: true },
+  { feature: "Recurring invoices", free: false, pro: false, business: true },
+  { feature: "API access", free: false, pro: false, business: true },
+];
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(true);
@@ -74,6 +83,24 @@ export default function PricingPage() {
     const yearlyCost = monthly * 12;
     const saved = yearlyCost - annual;
     return saved;
+  };
+
+  const renderCheck = (value: boolean | string) => {
+    if (value === true) {
+      return (
+        <svg className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      );
+    }
+    if (value === false) {
+      return (
+        <svg className="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      );
+    }
+    return <span className="text-sm text-slate-500">{value}</span>;
   };
 
   return (
@@ -116,7 +143,7 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Toggle */}
+        {/* Toggle - Fixed: dot moves to opposite side */}
         <div className="mb-12 flex items-center justify-center gap-4">
           <span className={`text-sm font-medium ${!annual ? "text-slate-900" : "text-slate-500"}`}>
             Monthly
@@ -128,9 +155,10 @@ export default function PricingPage() {
             }`}
           >
             <span
-              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${
-                annual ? "translate-x-7" : "translate-x-1"
+              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                annual ? "left-7" : "left-1"
               }`}
+              style={{ left: annual ? "28px" : "4px" }}
             />
           </button>
           <span className={`text-sm font-medium ${annual ? "text-slate-900" : "text-slate-500"}`}>
@@ -203,7 +231,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Comparison Table */}
+        {/* Comparison Table with Green/Red ticks */}
         <div className="mt-16">
           <h2 className="mb-8 text-center text-2xl font-bold text-slate-900">Compare plans</h2>
           <div className="overflow-x-auto">
@@ -217,22 +245,12 @@ export default function PricingPage() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ["Invoices per month", "3", "Unlimited", "Unlimited"],
-                  ["Watermark", "Yes", "No", "No"],
-                  ["Custom branding", "No", "Yes", "Yes"],
-                  ["Email PDF delivery", "No", "Yes", "Yes"],
-                  ["Invoice history", "No", "Yes", "Yes"],
-                  ["Crypto payments", "No", "Yes", "Yes"],
-                  ["Team members", "1", "1", "Up to 3"],
-                  ["Client portal", "No", "No", "Yes"],
-                  ["API access", "No", "No", "Yes"],
-                ].map(([feature, free, pro, business]) => (
-                  <tr key={feature} className="border-b border-slate-100">
-                    <td className="py-4 text-sm text-slate-600">{feature}</td>
-                    <td className="py-4 text-center text-sm text-slate-500">{free}</td>
-                    <td className="py-4 text-center text-sm text-slate-500">{pro}</td>
-                    <td className="py-4 text-center text-sm text-slate-500">{business}</td>
+                {featureComparison.map((row) => (
+                  <tr key={row.feature} className="border-b border-slate-100">
+                    <td className="py-4 text-sm text-slate-600">{row.feature}</td>
+                    <td className="py-4 text-center">{renderCheck(row.free)}</td>
+                    <td className="py-4 text-center">{renderCheck(row.pro)}</td>
+                    <td className="py-4 text-center">{renderCheck(row.business)}</td>
                   </tr>
                 ))}
               </tbody>
