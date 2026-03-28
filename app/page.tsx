@@ -306,9 +306,9 @@ export default function HomePage() {
             <a href="#features" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Features
             </a>
-            <a href="#pricing" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+            <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Pricing
-            </a>
+            </Link>
             <Link href="/builder" className="btn-primary">
               Create Free Invoice
             </Link>
