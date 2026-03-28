@@ -39,9 +39,10 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-lg font-semibold text-white">3. Payment and Billing</h2>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Pro plans are one-time payments with lifetime access</li>
+              <li>Pro and Business plans are available as monthly or annual subscriptions</li>
               <li>All payments are processed through secure cryptocurrency payment gateways</li>
               <li>Once a payment is confirmed, access is granted immediately</li>
+              <li>You can cancel your subscription at any time</li>
               <li>No refunds are offered after purchase (see Refund Policy)</li>
             </ul>
           </section>

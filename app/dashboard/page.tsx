@@ -45,10 +45,10 @@ export default function DashboardPage() {
       <div className="py-20 text-center">
         <h1 className="mb-4 text-2xl font-bold text-slate-900">Pro Dashboard</h1>
         <p className="mb-6 text-slate-600">
-          Upgrade to Pro to access your saved invoices and unlimited generations.
+          Upgrade to Pro to access your saved invoices and 35 invoices/month.
         </p>
-        <Link href="/checkout?plan=starter" className="btn-primary">
-          Upgrade to Pro — $29
+        <Link href="/checkout?plan=pro" className="btn-primary">
+          Upgrade to Pro — $9/mo
         </Link>
       </div>
     );

@@ -56,7 +56,7 @@ const features = [
       </svg>
     ),
     title: "Zero Friction",
-    desc: "Create your first invoice free. Pay $29 one-time to unlock unlimited invoices and AI features.",
+    desc: "Create your first invoice free. Upgrade to Pro ($9/mo) for 35 invoices/month + AI features.",
   },
 ];
 
@@ -84,7 +84,7 @@ const testimonials = [
 const faqs = [
   {
     q: "Do I need to create an account?",
-    a: "No. The free version works entirely in your browser with no signup. Pay only when you want unlimited invoices + AI features.",
+    a: "No. The free version works entirely in your browser with no signup. Pay only when you want more invoices or AI features.",
   },
   {
     q: "What payment methods do you accept?",
@@ -92,7 +92,7 @@ const faqs = [
   },
   {
     q: "Is this a subscription?",
-    a: "No. Pay once, use forever. $29 for the Starter pack, $49 for Pro with unlimited everything.",
+    a: "Yes, monthly or annual. Pro is $9/month or $79/year. Business is $19/month or $159/year with unlimited invoices.",
   },
   {
     q: "Can I use this on mobile?",
@@ -597,7 +597,7 @@ export default function HomePage() {
                     <p className="mb-4 text-sm text-sky-600">Save $29/year</p>
                   )}
                   <ul className="mb-6 space-y-3">
-                    {["Unlimited invoices", "No watermark", "Custom branding", "Email PDF delivery", "Priority support"].map((feat) => (
+                    {["35 invoices/month", "No watermark", "Custom branding", "Email PDF delivery", "Priority support"].map((feat) => (
                       <li key={feat} className="flex items-center gap-2 text-sm text-slate-600">
                         <svg className="h-4 w-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -627,7 +627,7 @@ export default function HomePage() {
                     <p className="mb-4 text-sm text-sky-600">Save $69/year</p>
                   )}
                   <ul className="mb-6 space-y-3">
-                    {["Everything in Pro", "Up to 3 team members", "Client portal", "Auto reminders", "API access"].map((feat) => (
+                    {["Unlimited invoices", "Everything in Pro", "Up to 3 team members", "Client portal", "API access"].map((feat) => (
                       <li key={feat} className="flex items-center gap-2 text-sm text-slate-600">
                         <svg className="h-4 w-4 shrink-0 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

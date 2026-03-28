@@ -31,8 +31,8 @@ export default function RefundPage() {
             <p>InvoiceGen is a digital product with immediate delivery. Once you complete a purchase and receive access to Pro features, we cannot &quot;take back&quot; that access. Additionally:</p>
             <ul className="list-disc pl-5 space-y-2 mt-2">
               <li>Our free tier allows you to fully test the service before purchasing</li>
-              <li>Pro features are delivered instantly upon payment confirmation</li>
-              <li>We offer a one-time payment model (not subscription)</li>
+              <li>Pro and Business features are delivered instantly upon payment confirmation</li>
+              <li>We offer monthly and annual subscription plans</li>
             </ul>
           </section>
 
