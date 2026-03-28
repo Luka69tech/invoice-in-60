@@ -87,7 +87,13 @@ export default function SharePage({ params }: { params: Promise<{ data: string }
 
   useEffect(() => {
     try {
-      const decoded = atob(data);
+      // Handle both encoded and non-encoded base64
+      let decoded: string;
+      try {
+        decoded = decodeURIComponent(atob(data));
+      } catch {
+        decoded = atob(data); // Fallback for old URLs
+      }
       const parsed = JSON.parse(decoded);
       
       if (validateInvoiceData(parsed)) {

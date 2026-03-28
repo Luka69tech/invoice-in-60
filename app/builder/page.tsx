@@ -308,14 +308,23 @@ export default function BuilderPage() {
 
   const copyShareLink = async () => {
     setShareError("");
-    const data = btoa(JSON.stringify(invoice));
-    const url = `${window.location.origin}/i/${data}`;
     try {
+      // Use encodeURIComponent to handle Unicode characters properly
+      const data = btoa(encodeURIComponent(JSON.stringify(invoice)));
+      const url = `${window.location.origin}/i/${data}`;
       await navigator.clipboard.writeText(url);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-    } catch {
-      setShareError(`Share URL: ${url}`);
+    } catch (err) {
+      console.error("Share error:", err);
+      // Fallback: show URL in alert
+      try {
+        const data = btoa(JSON.stringify(invoice));
+        const url = `${window.location.origin}/i/${data}`;
+        setShareError(`Share URL: ${url}`);
+      } catch {
+        setShareError("Failed to create share link");
+      }
     }
   };
 
