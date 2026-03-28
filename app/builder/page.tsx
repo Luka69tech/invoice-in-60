@@ -372,10 +372,10 @@ export default function BuilderPage() {
           )}
           {!isPro && (
             <Link
-              href="/checkout"
+              href="/pricing"
               className="hidden text-sm font-semibold text-brand-600 hover:text-brand-700 sm:block"
             >
-              Upgrade to Pro →
+              View Plans →
             </Link>
           )}
         </div>
@@ -400,15 +400,20 @@ export default function BuilderPage() {
       )}
 
       {showUpsell && (
-        <div className="mx-6 mt-4 rounded-lg border border-brand-200 bg-brand-50 px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="mx-6 mt-4 rounded-lg border border-amber-200 bg-amber-50 px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-brand-800">Love it? Get unlimited invoices + AI.</p>
-              <p className="text-sm text-brand-600">One-time $29 — never pay again.</p>
+              <p className="font-semibold text-amber-800">Free limit reached!</p>
+              <p className="text-sm text-amber-700">Upgrade to Pro for unlimited invoices — $9/month or $79/year (save 27%)</p>
             </div>
-            <Link href="/checkout" className="btn-primary shrink-0 text-sm">
-              Buy Pro — $29
-            </Link>
+            <div className="flex gap-2 shrink-0">
+              <Link href="/pricing" className="px-4 py-2 text-sm font-medium text-amber-700 hover:text-amber-800">
+                View Plans
+              </Link>
+              <Link href="/checkout?plan=pro" className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg">
+                Upgrade to Pro
+              </Link>
+            </div>
           </div>
         </div>
       )}
