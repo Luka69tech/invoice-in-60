@@ -60,7 +60,8 @@ function formatCurrency(amount: number, symbol: string): string {
 
 export async function generateInvoicePdf(
   invoice: InvoiceData,
-  currency: CurrencyInfo
+  currency: CurrencyInfo,
+  options?: { showWatermark?: boolean }
 ): Promise<Buffer> {
   try {
     const doc = new jsPDF();
@@ -213,7 +214,13 @@ export async function generateInvoicePdf(
     y = 280;
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text("Generated with InvoiceGen", pageWidth / 2, y, { align: "center" });
+    
+    // Watermark for free plan
+    if (!options?.showWatermark) {
+      doc.text("Created with Invoice In 60 — Create yours free at InvoiceIn60.com", pageWidth / 2, y, { align: "center" });
+    } else {
+      doc.text("Generated with InvoiceGen", pageWidth / 2, y, { align: "center" });
+    }
 
     const pdfBuffer = doc.output("arraybuffer");
     return Buffer.from(pdfBuffer);

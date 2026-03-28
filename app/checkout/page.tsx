@@ -5,7 +5,36 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Coins, Loader2, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
 
-const PRICE_IN_USD = 29;
+const PLANS = {
+  pro: {
+    name: "Pro",
+    monthly: 9,
+    annual: 79,
+    features: [
+      "Unlimited invoices",
+      "No watermark",
+      "Custom logo + brand colors",
+      "Email PDF delivery",
+      "Invoice history",
+      "Crypto payment acceptance",
+      "Priority support",
+    ],
+  },
+  business: {
+    name: "Business",
+    monthly: 19,
+    annual: 159,
+    features: [
+      "Everything in Pro",
+      "Up to 3 team members",
+      "Client portal",
+      "Auto payment reminders",
+      "Recurring invoices",
+      "API access",
+      "Dedicated support",
+    ],
+  },
+};
 
 type PaymentState = "idle" | "loading" | "redirecting" | "error";
 
@@ -13,9 +42,13 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const success = searchParams.get("success");
   const orderId = searchParams.get("orderId");
+  const planParam = searchParams.get("plan") || "pro";
+  
+  const plan = PLANS[planParam as keyof typeof PLANS] || PLANS.pro;
+  
+  const [isAnnual, setIsAnnual] = useState(true);
   const [isVerified, setIsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
-
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [email, setEmail] = useState("");
@@ -34,6 +67,9 @@ function CheckoutContent() {
     }
   }, [success, orderId]);
 
+  const price = isAnnual ? plan.annual : plan.monthly;
+  const savings = isAnnual ? (plan.monthly * 12 - plan.annual) : 0;
+
   const handlePayment = async () => {
     if (!email.trim()) {
       setErrorMessage("Please enter your email address");
@@ -50,7 +86,7 @@ function CheckoutContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId: `INV-${Date.now()}`,
-          fiatAmount: PRICE_IN_USD.toString(),
+          fiatAmount: price.toString(),
           fiatCurrency: "USD",
           returnUrl: `${window.location.origin}/checkout?success=true&orderId={orderId}`,
           customerEmail: email,
@@ -103,7 +139,7 @@ function CheckoutContent() {
 
             <h1 className="mb-3 text-2xl font-bold text-white">Payment Confirmed!</h1>
             <p className="mb-8 text-slate-400">
-              Thank you for your purchase. You now have Pro access.
+              Thank you for your purchase. You now have {plan.name} access.
             </p>
 
             <div className="space-y-3">
@@ -128,39 +164,58 @@ function CheckoutContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white text-sm font-bold">
               I
             </div>
-            <span className="font-bold text-white">InvoiceGen</span>
+            <span className="font-bold text-white">Invoice In 60</span>
           </Link>
-          <Link href="/builder" className="text-sm text-slate-400 hover:text-white transition-colors">
-            Try free →
+          <Link href="/pricing" className="text-sm text-slate-400 hover:text-white transition-colors">
+            View all plans →
           </Link>
         </div>
       </header>
 
       <div className="mx-auto max-w-lg px-5 py-16">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-brand-600/20 bg-brand-600/10">
             <Coins className="h-7 w-7 text-brand-500" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-white">Upgrade to Pro</h1>
+          <h1 className="mb-2 text-2xl font-bold text-white">Upgrade to {plan.name}</h1>
           <p className="text-slate-400">
-            Unlock unlimited AI-powered invoices
+            Unlock all {plan.name} features
           </p>
+        </div>
+
+        {/* Billing Toggle */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <span className={`text-sm ${!isAnnual ? "text-white" : "text-slate-500"}`}>
+            Monthly
+          </span>
+          <button
+            onClick={() => setIsAnnual(!isAnnual)}
+            className={`relative h-8 w-14 rounded-full transition-colors ${
+              isAnnual ? "bg-sky-600" : "bg-slate-700"
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+                isAnnual ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+          <span className={`text-sm ${isAnnual ? "text-white" : "text-slate-500"}`}>
+            Annual <span className="text-sky-400">(Save ${savings})</span>
+          </span>
         </div>
 
         <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-slate-400">Pro Plan</span>
-            <span className="text-2xl font-bold text-white">${PRICE_IN_USD}</span>
+            <span className="text-slate-400">{plan.name} Plan</span>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-white">${price}</span>
+              <span className="text-sm text-slate-500 ml-1">{isAnnual ? "/year" : "/month"}</span>
+            </div>
           </div>
 
           <div className="space-y-2 mb-6">
-            {[
-              "Unlimited AI invoice generations",
-              "Multi-currency support (15+ currencies)",
-              "Brand customization (logo & colors)",
-              "Premium PDF templates",
-              "Priority support",
-            ].map((feature) => (
+            {plan.features.map((feature) => (
               <div key={feature} className="flex items-center gap-2 text-sm text-slate-300">
                 <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
                 {feature}
@@ -171,7 +226,10 @@ function CheckoutContent() {
           <div className="border-t border-slate-800 pt-4 mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-400">Total</span>
-              <span className="text-lg font-bold text-white">${PRICE_IN_USD} USD</span>
+              <div className="text-right">
+                <span className="text-lg font-bold text-white">${price}</span>
+                <span className="text-sm text-slate-500 ml-1">USD {isAnnual ? "/year" : "/month"}</span>
+              </div>
             </div>
           </div>
 
