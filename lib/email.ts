@@ -1,7 +1,3 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export interface SendInvoiceEmailParams {
   to: string;
   invoiceNumber: string;
@@ -19,6 +15,17 @@ export async function sendInvoiceEmail({
   currency,
   pdfBase64,
 }: SendInvoiceEmailParams) {
+  // Lazy initialization to avoid build-time errors if env var is missing
+  const { Resend } = await import("resend");
+  
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("[email] RESEND_API_KEY not configured");
+    return { success: false, error: "Email service not configured" };
+  }
+  
+  const resend = new Resend(apiKey);
+
   try {
     const result = await resend.emails.send({
       from: "InvoiceGen <noreply@invoicein60.com>",
