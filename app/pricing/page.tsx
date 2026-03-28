@@ -24,7 +24,7 @@ const plans = [
     description: "For growing freelancers",
     price: { monthly: 9, annual: 79 },
     features: [
-      "Unlimited invoices",
+      "35 invoices per month",
       "No watermark",
       "Custom logo + brand colors",
       "Email PDF delivery",
@@ -57,7 +57,7 @@ const plans = [
 
 // Feature comparison: true = yes/green, false = no/red, "partial" = partial
 const featureComparison = [
-  { feature: "Invoices per month", free: "3", pro: "Unlimited", business: "Unlimited" },
+  { feature: "Invoices per month", free: "3", pro: "35", business: "Unlimited" },
   { feature: "Watermark", free: true, pro: false, business: false },
   { feature: "Custom branding", free: false, pro: true, business: true },
   { feature: "Email PDF delivery", free: false, pro: true, business: true },

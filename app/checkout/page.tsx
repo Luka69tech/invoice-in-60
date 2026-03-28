@@ -11,7 +11,7 @@ const PLANS = {
     monthly: 9,
     annual: 79,
     features: [
-      "Unlimited invoices",
+      "35 invoices per month",
       "No watermark",
       "Custom logo + brand colors",
       "Email PDF delivery",

@@ -47,7 +47,7 @@ export function UpgradeModal({ usedCount, limit, onClose }: UpgradeModalProps) {
           </div>
           <ul className="space-y-2 text-sm text-slate-300">
             <li className="flex items-center gap-2">
-              <span className="text-emerald-400">✓</span> Unlimited invoice generations
+              <span className="text-emerald-400">✓</span> 35 invoice generations/month
             </li>
             <li className="flex items-center gap-2">
               <span className="text-emerald-400">✓</span> AI-powered line items
@@ -60,6 +60,9 @@ export function UpgradeModal({ usedCount, limit, onClose }: UpgradeModalProps) {
             </li>
             <li className="flex items-center gap-2">
               <span className="text-emerald-400">✓</span> Email PDF delivery
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-amber-400">→</span> Want unlimited? Business plan $19/mo
             </li>
           </ul>
         </div>

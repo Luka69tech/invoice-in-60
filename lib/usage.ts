@@ -1,6 +1,7 @@
 import { redis } from "@/lib/redis";
 
 const FREE_INVOICE_LIMIT = 3; // Per month
+const PRO_INVOICE_LIMIT = 35; // Pro: 35 per month
 const HOURLY_RATE_LIMIT = 3;
 const MONTHLY_TTL = 31 * 24 * 60 * 60; // ~31 days
 const HOURLY_TTL = 60 * 60;
@@ -92,16 +93,52 @@ export async function checkAndIncrementUsage(fingerprint: string): Promise<Usage
     const now = Date.now();
     const currentMonthKey = getCurrentMonthKey();
 
-    // Determine user's plan
+    // Determine user's plan and limits
     const userPlan: Plan = plan?.plan || "free";
+    const planLimit = userPlan === "business" ? -1 : (userPlan === "pro" ? PRO_INVOICE_LIMIT : -1);
 
-    // For Pro/Business, no limits
-    if (userPlan !== "free") {
+    // For Business, no limits
+    if (userPlan === "business") {
       return {
         allowed: true,
         usedCount: 0,
         limit: -1, // Unlimited
         remaining: -1,
+        upgradeRequired: false,
+        plan: userPlan,
+      };
+    }
+
+    // For Pro, check 35/month limit
+    if (userPlan === "pro") {
+      const currentMonthKey = getCurrentMonthKey();
+      const proMonthUsage = usage.monthKey === currentMonthKey ? usage.count : 0;
+      
+      if (proMonthUsage >= PRO_INVOICE_LIMIT) {
+        return {
+          allowed: false,
+          reason: "limit_reached",
+          usedCount: proMonthUsage,
+          limit: PRO_INVOICE_LIMIT,
+          remaining: 0,
+          upgradeRequired: true,
+          plan: userPlan,
+        };
+      }
+      
+      // Increment usage for Pro
+      const newCount = proMonthUsage + 1;
+      await redis.set<UsageRecord>(usageKey(fingerprint), {
+        count: newCount,
+        firstSeen: usage.firstSeen || now,
+        monthKey: currentMonthKey,
+      }, { ex: MONTHLY_TTL });
+      
+      return {
+        allowed: true,
+        usedCount: newCount,
+        limit: PRO_INVOICE_LIMIT,
+        remaining: Math.max(0, PRO_INVOICE_LIMIT - newCount),
         upgradeRequired: false,
         plan: userPlan,
       };
@@ -194,8 +231,19 @@ export async function getUsageCount(fingerprint: string): Promise<{
     const plan = parsePlan(planRaw);
     const userPlan: Plan = plan?.plan || "free";
 
-    if (userPlan !== "free") {
+    if (userPlan === "business") {
       return { usedCount: 0, limit: -1, remaining: -1, plan: userPlan };
+    }
+
+    if (userPlan === "pro") {
+      const currentMonthKey = getCurrentMonthKey();
+      const count = usage.monthKey === currentMonthKey ? usage.count : 0;
+      return {
+        usedCount: count,
+        limit: PRO_INVOICE_LIMIT,
+        remaining: Math.max(0, PRO_INVOICE_LIMIT - count),
+        plan: userPlan,
+      };
     }
 
     const currentMonthKey = getCurrentMonthKey();
