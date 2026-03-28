@@ -223,19 +223,8 @@ export default function BuilderPage() {
 
   const downloadPdf = async () => {
     setPdfError("");
-    const errors: Record<string, string> = {};
-    if (!invoice.fromName?.trim()) {
-      errors.fromName = "Required";
-    }
-    if (!invoice.toName?.trim()) {
-      errors.toName = "Required";
-    }
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setPdfError("Please fill in required fields");
-      return;
-    }
 
+    // FIRST: Check usage limit before validating fields
     if (!isPro && fingerprintHash) {
       const fpData = await generateClientFingerprint();
       const params = new URLSearchParams({
@@ -260,6 +249,20 @@ export default function BuilderPage() {
       } catch {
         // Proceed without usage check if it fails
       }
+    }
+
+    // SECOND: Validate required fields
+    const errors: Record<string, string> = {};
+    if (!invoice.fromName?.trim()) {
+      errors.fromName = "Required";
+    }
+    if (!invoice.toName?.trim()) {
+      errors.toName = "Required";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setPdfError("Please fill in required fields");
+      return;
     }
 
     setPdfLoading(true);
