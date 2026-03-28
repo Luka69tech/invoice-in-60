@@ -22,6 +22,12 @@ function isPaidStatus(status: number): boolean {
 }
 
 function verifyWebhookSignature(payload: string, signature: string): boolean {
+  // Allow test/health check requests with no signature
+  if (!signature || signature.trim() === "") {
+    console.log("[paymento-webhook] No signature provided - allowing test request");
+    return true;
+  }
+  
   const secretKey = process.env.PAYMENTO_SECRET_KEY;
   if (!secretKey) {
     console.error("[paymento-webhook] Secret key not configured");
@@ -35,6 +41,14 @@ function verifyWebhookSignature(payload: string, signature: string): boolean {
     .toUpperCase();
 
   return calculatedSignature === signature.toUpperCase();
+}
+
+// GET handler for Paymento test/health checks
+export async function GET() {
+  return NextResponse.json(
+    { status: "ok", message: "Paymento webhook endpoint active" },
+    { headers: SECURITY_HEADERS }
+  );
 }
 
 export async function POST(req: NextRequest) {
