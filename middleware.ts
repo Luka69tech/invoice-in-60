@@ -4,11 +4,9 @@ import { checkRateLimit, buildRateLimitHeaders } from "@/lib/security/rate-limit
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
+  // Paymento webhook - bypass all checks, let the route handler handle auth
   if (path.startsWith("/api/webhooks/paymento")) {
-    const res = NextResponse.next();
-    res.headers.set("X-Frame-Options", "DENY");
-    res.headers.set("X-Content-Type-Options", "nosniff");
-    return res;
+    return NextResponse.next();
   }
 
   const rateResult = checkRateLimit(req, { maxRequests: 100, windowMs: 60 * 1000, keyPrefix: "global" });
@@ -40,6 +38,6 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/webhooks/paymento)(?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)/",
   ],
 };
