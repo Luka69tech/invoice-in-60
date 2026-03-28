@@ -52,9 +52,21 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // Debug logging
+  console.log("Webhook hit", req.method, Object.fromEntries(req.headers.entries()));
+  
   try {
     const signature = req.headers.get("X-Hmac-Sha256-Signature") || "";
     const rawBody = await req.text();
+    
+    // Allow empty body (test/health check pings)
+    if (!rawBody || rawBody.trim() === "") {
+      console.log("[paymento-webhook] Empty body - returning 200 for test ping");
+      return NextResponse.json(
+        { success: true, message: "Test ping received" },
+        { headers: SECURITY_HEADERS }
+      );
+    }
 
     const isValid = verifyWebhookSignature(rawBody, signature);
     if (!isValid) {
