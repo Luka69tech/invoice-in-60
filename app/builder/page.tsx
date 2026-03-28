@@ -248,6 +248,7 @@ export default function BuilderPage() {
         const usageRes = await fetch(`/api/check-usage?${params}`);
         const usageData = await usageRes.json();
         if (usageData.upgradeRequired) {
+          setPdfError("");
           setUsageUsed(usageData.usedCount);
           setShowUpgradeModal(true);
           return;
