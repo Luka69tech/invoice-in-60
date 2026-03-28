@@ -28,7 +28,7 @@ export async function sendInvoiceEmail({
 
   try {
     const result = await resend.emails.send({
-      from: "InvoiceGen <noreply@invoicein60.com>",
+      from: "Invoice In 60 <onboarding@resend.dev>",
       to: [to],
       subject: `Invoice ${invoiceNumber} - Payment Confirmed`,
       html: `
