@@ -41,7 +41,14 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
 
     const isValid = verifyWebhookSignature(rawBody, signature);
-    console.log(`[paymento-webhook] Signature valid: ${isValid}`);
+    if (!isValid) {
+      console.log(`[paymento-webhook] INVALID signature - rejecting request`);
+      return NextResponse.json(
+        { error: "Invalid signature" },
+        { status: 401, headers: SECURITY_HEADERS }
+      );
+    }
+    console.log(`[paymento-webhook] Signature valid - processing webhook`);
 
     const body = JSON.parse(rawBody);
     const { OrderId, OrderStatus, AdditionalData = [] } = body;
