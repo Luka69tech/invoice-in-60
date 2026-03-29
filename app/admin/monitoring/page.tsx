@@ -176,7 +176,7 @@ export default function MonitoringPage() {
               {loading ? "Loading..." : "Refresh"}
             </button>
             <button
-              onClick={() => { localStorage.removeItem("admin_token"); localStorage.removeItem("admin_password"); setAuthed(false); }}
+              onClick={() => { localStorage.removeItem("admin_token"); localStorage.removeItem("admin_password"); setPassword(""); setShowPassword(false); setAuthed(false); }}
               className="text-sm text-[#8a8a8a] hover:text-white transition-colors"
             >
               Sign out
