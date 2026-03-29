@@ -260,7 +260,7 @@ function FaqItem({ faq, index }: { faq: typeof faqs[0]; index: number }) {
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [annual, setAnnual] = useState(true);
+  const [annual, setAnnual] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
@@ -536,18 +536,25 @@ export default function HomePage() {
 
           {/* Billing Toggle */}
           <div className="mb-12 flex items-center justify-center gap-4">
-            <span className="text-sm font-medium text-slate-500">Monthly</span>
+            <span className={`text-sm font-medium transition-colors ${!annual ? "text-slate-900" : "text-slate-400"}`}>
+              Monthly
+            </span>
             <button
               onClick={() => setAnnual(!annual)}
-              className={`relative h-8 w-14 rounded-full transition-colors ${annual ? "bg-sky-600" : "bg-slate-300"}`}
+              className={`relative h-9 w-16 rounded-full transition-colors duration-300 ${
+                annual ? "bg-emerald-500" : "bg-slate-300"
+              }`}
             >
               <span
-                className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${annual ? "left-7" : "left-1"}`}
-                style={{ left: annual ? "28px" : "4px" }}
+                className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
+                style={{ transform: annual ? "translateX(32px)" : "translateX(4px)" }}
               />
             </button>
-            <span className="text-sm font-medium text-slate-900">
-              Annual <span className="text-sky-600">(Save up to 30%)</span>
+            <span className={`text-sm font-medium transition-colors ${annual ? "text-slate-900" : "text-slate-400"}`}>
+              Annual
+              <span className={`ml-1.5 text-xs font-medium ${annual ? "text-emerald-600" : "text-slate-400"}`}>
+                {annual ? "Save up to 30%" : ""}
+              </span>
             </span>
           </div>
 
@@ -581,20 +588,37 @@ export default function HomePage() {
             {/* Pro tier */}
             <Reveal delay={400}>
               <div className="relative overflow-hidden rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-2">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
-                    Most Popular
-                  </span>
-                </div>
+                {!annual && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                {annual && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
+                      Best Value
+                    </span>
+                  </div>
+                )}
                 <div className="relative z-10">
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Pro</h3>
                   <p className="mb-4 text-sm text-slate-500">For growing freelancers</p>
-                  <div className="mb-6">
+                  <div className="mb-2">
                     <span className="text-4xl font-bold text-slate-900">${annual ? 79 : 9}</span>
-                    <span className="ml-2 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
+                    <span className="ml-1 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
                   </div>
                   {annual && (
-                    <p className="mb-4 text-sm text-sky-600">Save $29/year</p>
+                    <div className="mb-4">
+                      <p className="text-xs text-slate-400">${Math.round(79/12)}/mo billed annually</p>
+                      <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                        Save 27%
+                      </div>
+                    </div>
+                  )}
+                  {!annual && (
+                    <p className="mb-4 text-sm text-slate-500">Save up to $90/year on annual</p>
                   )}
                   <ul className="mb-6 space-y-3">
                     {["35 invoices/month", "No watermark", "Custom branding", "Email PDF delivery", "Priority support"].map((feat) => (
@@ -619,12 +643,20 @@ export default function HomePage() {
                 <div className="relative z-10">
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Business</h3>
                   <p className="mb-4 text-sm text-slate-500">For teams and agencies</p>
-                  <div className="mb-6">
+                  <div className="mb-2">
                     <span className="text-4xl font-bold text-slate-900">${annual ? 159 : 19}</span>
-                    <span className="ml-2 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
+                    <span className="ml-1 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
                   </div>
                   {annual && (
-                    <p className="mb-4 text-sm text-sky-600">Save $69/year</p>
+                    <div className="mb-4">
+                      <p className="text-xs text-slate-400">${Math.round(159/12)}/mo billed annually</p>
+                      <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                        Save 30%
+                      </div>
+                    </div>
+                  )}
+                  {!annual && (
+                    <p className="mb-4 text-sm text-slate-500">Save up to $190/year on annual</p>
                   )}
                   <ul className="mb-6 space-y-3">
                     {["Unlimited invoices", "Everything in Pro", "Up to 3 team members", "Client portal", "API access"].map((feat) => (
