@@ -169,19 +169,21 @@ export default function PricingPage() {
             <div
               key={plan.name}
               className={`relative rounded-2xl border-2 p-6 transition-all ${
-                plan.popular
+                plan.name === "Pro" && !isAnnual
                   ? "border-sky-500 shadow-xl shadow-sky-500/10"
+                  : plan.name === "Business" && isAnnual
+                  ? "border-emerald-500 shadow-xl shadow-emerald-500/10"
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              {plan.popular && !isAnnual && (
+              {plan.name === "Pro" && !isAnnual && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                     Most Popular
                   </span>
                 </div>
               )}
-              {isAnnual && plan.price.monthly > 0 && (
+              {plan.name === "Business" && isAnnual && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
                     Best Value

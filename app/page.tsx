@@ -587,18 +587,15 @@ export default function HomePage() {
 
             {/* Pro tier */}
             <Reveal delay={400}>
-              <div className="relative overflow-hidden rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-2">
+              <div className={`relative overflow-hidden rounded-2xl border-2 bg-white p-6 shadow-xl transition-all hover:-translate-y-2 ${
+                !isAnnual
+                  ? "border-sky-500 shadow-sky-500/20"
+                  : "border-slate-200 shadow-slate-200/20"
+              }`}>
                 {!isAnnual && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                       Most Popular
-                    </span>
-                  </div>
-                )}
-                {isAnnual && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
-                      Best Value
                     </span>
                   </div>
                 )}
@@ -639,7 +636,18 @@ export default function HomePage() {
 
             {/* Business tier */}
             <Reveal delay={500}>
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all hover:-translate-y-2 hover:shadow-xl">
+              <div className={`group relative overflow-hidden rounded-2xl border-2 bg-white p-6 shadow-xl transition-all hover:-translate-y-2 ${
+                isAnnual
+                  ? "border-emerald-500 shadow-emerald-500/20"
+                  : "border-slate-200/60 shadow-lg"
+              }`}>
+                {isAnnual && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
+                      Best Value
+                    </span>
+                  </div>
+                )}
                 <div className="relative z-10">
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Business</h3>
                   <p className="mb-4 text-sm text-slate-500">For teams and agencies</p>
