@@ -7,7 +7,7 @@ const plans = [
   {
     name: "Free",
     description: "Perfect for trying things out",
-    price: { monthly: 0, isAnnual: 0 },
+    price: { monthly: 0, annual: 0 },
     features: [
       "3 invoices per month",
       "Watermark on PDF",
@@ -22,7 +22,7 @@ const plans = [
   {
     name: "Pro",
     description: "For growing freelancers",
-    price: { monthly: 9, isAnnual: 79 },
+    price: { monthly: 9, annual: 79 },
     features: [
       "35 invoices per month",
       "No watermark",
@@ -39,7 +39,7 @@ const plans = [
   {
     name: "Business",
     description: "For teams and agencies",
-    price: { monthly: 19, isAnnual: 159 },
+    price: { monthly: 19, annual: 159 },
     features: [
       "Everything in Pro",
       "Up to 3 team members",
@@ -78,10 +78,10 @@ export default function PricingPage() {
     return `$${price}${isMonthly ? "/mo" : ""}`;
   };
 
-  const savingsPercent = (monthly: number, isAnnual: number) => {
-    if (monthly === 0 || isAnnual === 0) return null;
+  const savingsPercent = (monthly: number, annual: number) => {
+    if (monthly === 0 || annual === 0) return null;
     const yearlyMonthly = monthly * 12;
-    const pct = Math.round(((yearlyMonthly - isAnnual) / yearlyMonthly) * 100);
+    const pct = Math.round(((yearlyMonthly - annual) / yearlyMonthly) * 100);
     return pct;
   };
 
@@ -150,19 +150,16 @@ export default function PricingPage() {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            className="relative h-9 w-16 rounded-full transition-colors duration-300"
             style={{ backgroundColor: isAnnual ? '#10b981' : '#6b7280' }}
           >
             <span
-              className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+              className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
               style={{ transform: isAnnual ? 'translateX(24px)' : 'translateX(4px)' }}
             />
           </button>
           <span className={`text-sm font-medium transition-colors ${isAnnual ? "text-slate-900" : "text-slate-400"}`}>
             Annual
-            <span className={`ml-1.5 text-xs font-medium ${isAnnual ? "text-emerald-600" : "text-slate-400"}`}>
-              {isAnnual ? "Save up to 30%" : ""}
-            </span>
           </span>
         </div>
 
@@ -202,16 +199,16 @@ export default function PricingPage() {
                 <div className="transition-all duration-300">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-bold text-slate-900">
-                      {plan.price.monthly === 0 ? "Free" : `$${isAnnual ? plan.price.isAnnual : plan.price.monthly}`}
+                      {plan.price.monthly === 0 ? "Free" : `$${isAnnual ? plan.price.annual : plan.price.monthly}`}
                     </span>
                     <span className="text-slate-500">
                       {plan.price.monthly === 0 ? "" : isAnnual ? "/year" : "/month"}
                     </span>
                   </div>
-                  {/* Monthly equivalent for isAnnual */}
+                  {/* Monthly equivalent for annual */}
                   {isAnnual && plan.price.monthly > 0 && (
                     <p className="text-xs text-slate-400 mt-1 transition-all duration-300">
-                      ${Math.round(plan.price.isAnnual / 12)}/month billed isAnnually
+                      ${Math.round(plan.price.annual / 12)}/month billed annually
                     </p>
                   )}
                   {/* Savings badge */}
@@ -220,7 +217,7 @@ export default function PricingPage() {
                       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
-                      Save {savingsPercent(plan.price.monthly, plan.price.isAnnual)}%
+                      Save {savingsPercent(plan.price.monthly, plan.price.annual)}%
                     </div>
                   )}
                 </div>

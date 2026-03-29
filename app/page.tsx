@@ -92,7 +92,7 @@ const faqs = [
   },
   {
     q: "Is this a subscription?",
-    a: "Yes, monthly or isAnnual. Pro is $9/month or $79/year. Business is $19/month or $159/year with unlimited invoices.",
+    a: "Yes, monthly or annual. Pro is $9/month or $79/year. Business is $19/month or $159/year with unlimited invoices.",
   },
   {
     q: "Can I use this on mobile?",
@@ -119,6 +119,7 @@ const logos = [
 function useReveal(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -541,11 +542,11 @@ export default function HomePage() {
             </span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
-              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+              className="relative h-9 w-16 rounded-full transition-colors duration-300"
               style={{ backgroundColor: isAnnual ? '#10b981' : '#6b7280' }}
             >
               <span
-                className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
                 style={{ transform: isAnnual ? 'translateX(24px)' : 'translateX(4px)' }}
               />
             </button>
@@ -587,7 +588,7 @@ export default function HomePage() {
             {/* Pro tier */}
             <Reveal delay={400}>
               <div className="relative overflow-hidden rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-2">
-                {isAnnual && (
+                {!isAnnual && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                       Most Popular
@@ -610,14 +611,14 @@ export default function HomePage() {
                   </div>
                   {isAnnual && (
                     <div className="mb-4">
-                      <p className="text-xs text-slate-400">${Math.round(79/12)}/mo billed isAnnually</p>
+                      <p className="text-xs text-slate-400">${Math.round(79/12)}/mo billed annually</p>
                       <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
                         Save 27%
                       </div>
                     </div>
                   )}
-                  {isAnnual && (
-                    <p className="mb-4 text-sm text-slate-500">Save up to $90/year on isAnnual</p>
+                  {!isAnnual && (
+                    <p className="mb-4 text-sm text-slate-500">Save up to $90/year on annual</p>
                   )}
                   <ul className="mb-6 space-y-3">
                     {["35 invoices/month", "No watermark", "Custom branding", "Email PDF delivery", "Priority support"].map((feat) => (
@@ -648,14 +649,14 @@ export default function HomePage() {
                   </div>
                   {isAnnual && (
                     <div className="mb-4">
-                      <p className="text-xs text-slate-400">${Math.round(159/12)}/mo billed isAnnually</p>
+                      <p className="text-xs text-slate-400">${Math.round(159/12)}/mo billed annually</p>
                       <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
                         Save 30%
                       </div>
                     </div>
                   )}
-                  {isAnnual && (
-                    <p className="mb-4 text-sm text-slate-500">Save up to $190/year on isAnnual</p>
+                  {!isAnnual && (
+                    <p className="mb-4 text-sm text-slate-500">Save up to $190/year on annual</p>
                   )}
                   <ul className="mb-6 space-y-3">
                     {["Unlimited invoices", "Everything in Pro", "Up to 3 team members", "Client portal", "API access"].map((feat) => (
