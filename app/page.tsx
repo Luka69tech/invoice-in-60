@@ -517,7 +517,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-28 lg:py-36 overflow-visible">
+      <section id="pricing" className="py-28 lg:py-36">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 text-center">
             <Reveal>
@@ -558,7 +558,7 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3 pt-10">
+          <div className="grid gap-6 md:grid-cols-3">
             {/* Free tier */}
             <Reveal delay={300}>
               <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all hover:-translate-y-2 hover:shadow-xl">
@@ -593,7 +593,7 @@ export default function HomePage() {
                   : "border-slate-200 shadow-slate-200/20"
               }`}>
                 {!isAnnual && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="mb-3 flex justify-center">
                     <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                       Most Popular
                     </span>
@@ -642,7 +642,7 @@ export default function HomePage() {
                   : "border-slate-200/60 shadow-lg"
               }`}>
                 {isAnnual && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="mb-3 flex justify-center">
                     <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
                       Best Value
                     </span>
