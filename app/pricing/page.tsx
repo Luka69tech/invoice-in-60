@@ -71,18 +71,18 @@ const featureComparison = [
 ];
 
 export default function PricingPage() {
-  const [annual, setAnnual] = useState(true);
+  const [annual, setAnnual] = useState(false);
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number, isMonthly: boolean) => {
     if (price === 0) return "Free";
-    return `$${price}`;
+    return `$${price}${isMonthly ? "/mo" : ""}`;
   };
 
-  const savings = (monthly: number, annual: number) => {
+  const savingsPercent = (monthly: number, annual: number) => {
     if (monthly === 0 || annual === 0) return null;
-    const yearlyCost = monthly * 12;
-    const saved = yearlyCost - annual;
-    return saved;
+    const yearlyMonthly = monthly * 12;
+    const pct = Math.round(((yearlyMonthly - annual) / yearlyMonthly) * 100);
+    return pct;
   };
 
   const renderCheck = (value: boolean | string) => {
@@ -143,26 +143,28 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Toggle - Fixed: dot moves to opposite side */}
+        {/* Toggle */}
         <div className="mb-12 flex items-center justify-center gap-4">
-          <span className={`text-sm font-medium ${!annual ? "text-slate-900" : "text-slate-500"}`}>
+          <span className={`text-sm font-medium transition-colors ${!annual ? "text-slate-900" : "text-slate-400"}`}>
             Monthly
           </span>
           <button
             onClick={() => setAnnual(!annual)}
-            className={`relative h-8 w-14 rounded-full transition-colors ${
-              annual ? "bg-sky-600" : "bg-slate-300"
+            className={`relative h-9 w-16 rounded-full transition-colors duration-300 ${
+              annual ? "bg-emerald-500" : "bg-slate-300"
             }`}
           >
             <span
-              className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${
-                annual ? "left-7" : "left-1"
+              className={`absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out ${
+                annual ? "translate-x-8" : "translate-x-1"
               }`}
-              style={{ left: annual ? "28px" : "4px" }}
             />
           </button>
-          <span className={`text-sm font-medium ${annual ? "text-slate-900" : "text-slate-500"}`}>
-            Annual <span className="text-sky-600">(Save up to 30%)</span>
+          <span className={`text-sm font-medium transition-colors ${annual ? "text-slate-900" : "text-slate-400"}`}>
+            Annual
+            <span className={`ml-1.5 text-xs font-medium ${annual ? "text-emerald-600" : "text-slate-400"}`}>
+              {annual ? "Save up to 30%" : ""}
+            </span>
           </span>
         </div>
 
@@ -177,10 +179,17 @@ export default function PricingPage() {
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              {plan.popular && (
+              {plan.popular && !annual && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                     Most Popular
+                  </span>
+                </div>
+              )}
+              {annual && plan.price.monthly > 0 && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
+                    Best Value
                   </span>
                 </div>
               )}
@@ -191,19 +200,32 @@ export default function PricingPage() {
               </div>
 
               <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-slate-900">
-                    {formatPrice(annual ? plan.price.annual : plan.price.monthly)}
-                  </span>
-                  <span className="text-slate-500">
-                    {plan.price.monthly === 0 ? "" : annual ? "/year" : "/month"}
-                  </span>
+                {/* Price display with animation */}
+                <div className="transition-all duration-300">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-slate-900">
+                      {plan.price.monthly === 0 ? "Free" : `$${annual ? plan.price.annual : plan.price.monthly}`}
+                    </span>
+                    <span className="text-slate-500">
+                      {plan.price.monthly === 0 ? "" : annual ? "/year" : "/month"}
+                    </span>
+                  </div>
+                  {/* Monthly equivalent for annual */}
+                  {annual && plan.price.monthly > 0 && (
+                    <p className="text-xs text-slate-400 mt-1 transition-all duration-300">
+                      ${Math.round(plan.price.annual / 12)}/month billed annually
+                    </p>
+                  )}
+                  {/* Savings badge */}
+                  {annual && plan.price.monthly > 0 && (
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 transition-all duration-300">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Save {savingsPercent(plan.price.monthly, plan.price.annual)}%
+                    </div>
+                  )}
                 </div>
-                {annual && plan.price.monthly > 0 && (
-                  <p className="mt-1 text-sm text-sky-600">
-                    Save ${savings(plan.price.monthly, plan.price.annual)}/year
-                  </p>
-                )}
               </div>
 
               <ul className="mb-6 space-y-3">
