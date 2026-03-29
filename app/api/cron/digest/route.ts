@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
@@ -129,7 +129,19 @@ async function sendDigest(stats: Stats): Promise<void> {
   });
 }
 
-export async function GET() {
+const CRON_SECRET = process.env.CRON_SECRET;
+
+async function verifyCronAuth(req: NextRequest): Promise<boolean> {
+  if (!CRON_SECRET) return false;
+  const authHeader = req.headers.get("authorization");
+  return authHeader === `Bearer ${CRON_SECRET}`;
+}
+
+export async function GET(req: NextRequest) {
+  if (!await verifyCronAuth(req)) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   try {
     const stats = await getStats();
     await sendDigest(stats);
