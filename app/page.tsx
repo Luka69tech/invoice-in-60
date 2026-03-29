@@ -547,7 +547,7 @@ export default function HomePage() {
             >
               <span
                 className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
-                style={{ transform: annual ? "translateX(48px)" : "translateX(2px)" }}
+                style={{ transform: annual ? "translateX(2px)" : "translateX(32px)" }}
               />
             </button>
             <span className={`text-sm font-medium transition-colors ${annual ? "text-slate-900" : "text-slate-400"}`}>

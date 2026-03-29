@@ -196,7 +196,7 @@ function CheckoutContent() {
           >
             <span
               className="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200"
-              style={{ transform: isAnnual ? "translateX(28px)" : "translateX(2px)" }}
+              style={{ transform: isAnnual ? "translateX(4px)" : "translateX(28px)" }}
             />
           </button>
           <span className={`text-sm ${isAnnual ? "text-white" : "text-slate-500"}`}>
