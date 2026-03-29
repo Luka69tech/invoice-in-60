@@ -558,7 +558,7 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3 pt-4">
             {/* Free tier */}
             <Reveal delay={300}>
               <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all hover:-translate-y-2 hover:shadow-xl">
