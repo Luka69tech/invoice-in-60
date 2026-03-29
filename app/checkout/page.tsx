@@ -88,7 +88,7 @@ function CheckoutContent() {
           orderId: `INV-${Date.now()}`,
           fiatAmount: price.toString(),
           fiatCurrency: "USD",
-          returnUrl: `${window.location.origin}/checkout?success=true&orderId={orderId}`,
+          returnUrl: `${window.location.origin}/checkout?success=true&orderId=${orderId}`,
           customerEmail: email,
         }),
       });
