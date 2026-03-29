@@ -517,7 +517,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="relative py-28 lg:py-36">
+      <section id="pricing" className="relative py-28 lg:py-36 pt-20 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 text-center">
             <Reveal>
