@@ -92,7 +92,7 @@ const faqs = [
   },
   {
     q: "Is this a subscription?",
-    a: "Yes, monthly or annual. Pro is $9/month or $79/year. Business is $19/month or $159/year with unlimited invoices.",
+    a: "Yes, monthly or isAnnual. Pro is $9/month or $79/year. Business is $19/month or $159/year with unlimited invoices.",
   },
   {
     q: "Can I use this on mobile?",
@@ -260,7 +260,7 @@ function FaqItem({ faq, index }: { faq: typeof faqs[0]; index: number }) {
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [annual, setAnnual] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
@@ -536,24 +536,23 @@ export default function HomePage() {
 
           {/* Billing Toggle */}
           <div className="mb-12 flex items-center justify-center gap-4">
-            <span className={`text-sm font-medium transition-colors ${!annual ? "text-slate-900" : "text-slate-400"}`}>
+            <span className={`text-sm font-medium transition-colors ${!isAnnual ? "text-slate-900" : "text-slate-400"}`}>
               Monthly
             </span>
             <button
-              onClick={() => setAnnual(!annual)}
-              className={`relative h-9 w-16 rounded-full transition-colors duration-300 ${
-                annual ? "bg-emerald-500" : "bg-slate-300"
-              }`}
+              onClick={() => setIsAnnual(!isAnnual)}
+              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+              style={{ backgroundColor: isAnnual ? '#10b981' : '#6b7280' }}
             >
               <span
-                className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
-                style={{ transform: annual ? "translateX(32px)" : "translateX(4px)" }}
+                className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                style={{ transform: isAnnual ? 'translateX(24px)' : 'translateX(4px)' }}
               />
             </button>
-            <span className={`text-sm font-medium transition-colors ${annual ? "text-slate-900" : "text-slate-400"}`}>
+            <span className={`text-sm font-medium transition-colors ${isAnnual ? "text-slate-900" : "text-slate-400"}`}>
               Annual
-              <span className={`ml-1.5 text-xs font-medium ${annual ? "text-emerald-600" : "text-slate-400"}`}>
-                {annual ? "Save up to 30%" : ""}
+              <span className={`ml-1.5 text-xs font-medium ${isAnnual ? "text-emerald-600" : "text-slate-400"}`}>
+                {isAnnual ? "Save up to 30%" : ""}
               </span>
             </span>
           </div>
@@ -588,14 +587,14 @@ export default function HomePage() {
             {/* Pro tier */}
             <Reveal delay={400}>
               <div className="relative overflow-hidden rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-2">
-                {!annual && (
+                {isAnnual && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="rounded-full bg-sky-600 px-4 py-1 text-xs font-semibold text-white">
                       Most Popular
                     </span>
                   </div>
                 )}
-                {annual && (
+                {isAnnual && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
                       Best Value
@@ -606,19 +605,19 @@ export default function HomePage() {
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Pro</h3>
                   <p className="mb-4 text-sm text-slate-500">For growing freelancers</p>
                   <div className="mb-2">
-                    <span className="text-4xl font-bold text-slate-900">${annual ? 79 : 9}</span>
-                    <span className="ml-1 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
+                    <span className="text-4xl font-bold text-slate-900">${isAnnual ? 79 : 9}</span>
+                    <span className="ml-1 text-sm text-slate-500">{isAnnual ? "/year" : "/month"}</span>
                   </div>
-                  {annual && (
+                  {isAnnual && (
                     <div className="mb-4">
-                      <p className="text-xs text-slate-400">${Math.round(79/12)}/mo billed annually</p>
+                      <p className="text-xs text-slate-400">${Math.round(79/12)}/mo billed isAnnually</p>
                       <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
                         Save 27%
                       </div>
                     </div>
                   )}
-                  {!annual && (
-                    <p className="mb-4 text-sm text-slate-500">Save up to $90/year on annual</p>
+                  {isAnnual && (
+                    <p className="mb-4 text-sm text-slate-500">Save up to $90/year on isAnnual</p>
                   )}
                   <ul className="mb-6 space-y-3">
                     {["35 invoices/month", "No watermark", "Custom branding", "Email PDF delivery", "Priority support"].map((feat) => (
@@ -644,19 +643,19 @@ export default function HomePage() {
                   <h3 className="mb-2 text-xl font-bold text-slate-900">Business</h3>
                   <p className="mb-4 text-sm text-slate-500">For teams and agencies</p>
                   <div className="mb-2">
-                    <span className="text-4xl font-bold text-slate-900">${annual ? 159 : 19}</span>
-                    <span className="ml-1 text-sm text-slate-500">{annual ? "/year" : "/month"}</span>
+                    <span className="text-4xl font-bold text-slate-900">${isAnnual ? 159 : 19}</span>
+                    <span className="ml-1 text-sm text-slate-500">{isAnnual ? "/year" : "/month"}</span>
                   </div>
-                  {annual && (
+                  {isAnnual && (
                     <div className="mb-4">
-                      <p className="text-xs text-slate-400">${Math.round(159/12)}/mo billed annually</p>
+                      <p className="text-xs text-slate-400">${Math.round(159/12)}/mo billed isAnnually</p>
                       <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
                         Save 30%
                       </div>
                     </div>
                   )}
-                  {!annual && (
-                    <p className="mb-4 text-sm text-slate-500">Save up to $190/year on annual</p>
+                  {isAnnual && (
+                    <p className="mb-4 text-sm text-slate-500">Save up to $190/year on isAnnual</p>
                   )}
                   <ul className="mb-6 space-y-3">
                     {["Unlimited invoices", "Everything in Pro", "Up to 3 team members", "Client portal", "API access"].map((feat) => (
