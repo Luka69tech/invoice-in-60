@@ -4,6 +4,7 @@ import { checkRateLimit, buildRateLimitHeaders } from "@/lib/security/rate-limit
 import { pdfRequestSchema, formatZodError } from "@/lib/security/validation";
 import { SECURITY_HEADERS } from "@/lib/security/headers";
 import { checkAndIncrementUsage } from "@/lib/usage";
+import { redis } from "@/lib/redis";
 
 export async function POST(req: NextRequest) {
   const rateResult = checkRateLimit(req, { maxRequests: 20, windowMs: 60 * 1000, keyPrefix: "pdf" });
@@ -61,6 +62,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const pdfBuffer = await generateInvoicePdf(invoice, currency);
+
+    // Increment invoice stats (fire and forget)
+    redis.incr("stats:invoices:total").catch(() => {});
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
