@@ -155,9 +155,8 @@ export default function PricingPage() {
             }`}
           >
             <span
-              className={`absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out ${
-                annual ? "translate-x-8" : "translate-x-1"
-              }`}
+              className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
+              style={{ transform: annual ? "translateX(48px)" : "translateX(2px)" }}
             />
           </button>
           <span className={`text-sm font-medium transition-colors ${annual ? "text-slate-900" : "text-slate-400"}`}>
