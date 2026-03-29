@@ -517,7 +517,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-28 lg:py-36">
+      <section id="pricing" className="py-28 lg:py-36 overflow-visible">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 text-center">
             <Reveal>
@@ -558,7 +558,7 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3 pt-4">
+          <div className="grid gap-6 md:grid-cols-3 pt-10">
             {/* Free tier */}
             <Reveal delay={300}>
               <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all hover:-translate-y-2 hover:shadow-xl">
