@@ -190,17 +190,37 @@ function CheckoutContent() {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className={`relative h-8 w-14 rounded-full transition-colors ${
-              isAnnual ? "bg-sky-600" : "bg-slate-700"
-            }`}
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              width: '44px',
+              height: '24px',
+              borderRadius: '12px',
+              backgroundColor: isAnnual ? '#10b981' : '#6b7280',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+              padding: 0
+            }}
           >
             <span
-              className="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200"
-              style={{ transform: isAnnual ? "translateX(28px)" : "translateX(2px)" }}
+              style={{
+                position: 'absolute',
+                left: isAnnual ? '22px' : '2px',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                transition: 'left 0.2s'
+              }}
             />
           </button>
           <span className={`text-sm ${isAnnual ? "text-white" : "text-slate-500"}`}>
-            Annual <span className="text-sky-400">(Save ${savings})</span>
+            Annual
+            <span className={`ml-1.5 text-xs font-medium ${isAnnual ? "text-emerald-400" : "text-slate-500"}`}>
+              {isAnnual ? "Save up to 30%" : ""}
+            </span>
           </span>
         </div>
 
