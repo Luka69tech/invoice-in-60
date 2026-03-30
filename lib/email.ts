@@ -118,10 +118,15 @@ export async function sendInvoiceEmail({
       ],
     });
 
-    console.log("[email] Resend response:", result);
-    return { success: true, data: result };
+    const { id, error: resendError } = result as { id?: string; error?: unknown };
+    if (resendError || !id) {
+      console.error("[email] Resend API error:", resendError);
+      return { success: false, error: resendError };
+    }
+    console.log(`[email] ✅ Email sent successfully to ${to}, ID: ${id}`);
+    return { success: true, data: { id } };
   } catch (error) {
-    console.error("[email] Failed to send invoice email:", error);
+    console.error("[email] ❌ Failed to send invoice email:", error);
     return { success: false, error };
   }
 }
