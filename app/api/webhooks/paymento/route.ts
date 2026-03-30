@@ -4,6 +4,8 @@ import { redis } from "@/lib/redis";
 import { PAYMENTO_STATUS, isPaidStatus } from "@/lib/paymento";
 import { incrementRateLimit, shouldAlert } from "@/lib/monitoring";
 import { sendTelegram } from "@/lib/telegram";
+import { sendInvoiceEmail } from "@/lib/email";
+import { generateInvoicePdf } from "@/lib/pdf-generator";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +93,74 @@ export async function POST(req: NextRequest) {
       await sendTelegram(`💰 *PAYMENT RECEIVED*\n\nPlan: *${planLabel}*\nOrder: \`${OrderId}\`\nAmount: $${planType === "business" ? "19" : "9"}\n\nTime: ${new Date().toLocaleString()}`);
 
       console.log(`[paymento-webhook] Payment confirmed for order ${OrderId}`);
+
+      // Send confirmation email with PDF receipt
+      const additionalDataObj: Record<string, string> = {};
+      if (AdditionalData && Array.isArray(AdditionalData)) {
+        for (const item of AdditionalData) {
+          if (item && item.key) {
+            additionalDataObj[item.key] = item.value || "";
+          }
+        }
+      }
+      const customerEmail = additionalDataObj["customerEmail"];
+
+      if (customerEmail && customerEmail.includes("@")) {
+        console.log(`[paymento-webhook] Sending confirmation email to ${customerEmail}`);
+
+        const amount = planType === "business" ? "19.00" : "9.00";
+        const receiptItems = [
+          {
+            id: "1",
+            description: planType === "business" ? "InvoiceGen Business - Lifetime Access" : "InvoiceGen Pro - Lifetime Access",
+            quantity: "1",
+            rate: amount,
+            amount: `${amount}`,
+          },
+        ];
+
+        const dummyInvoice = {
+          fromName: "InvoiceGen",
+          fromEmail: "onboarding@resend.dev",
+          fromAddress: "https://invoice-in-60.vercel.app",
+          toName: customerEmail.split("@")[0],
+          toEmail: customerEmail,
+          toAddress: "",
+          invoiceNumber: OrderId,
+          issueDate: new Date().toISOString().split("T")[0],
+          dueDate: new Date().toISOString().split("T")[0],
+          currency: "$",
+          notes: "Thank you for your purchase!",
+          items: receiptItems,
+          brandColor: "#22c55e",
+          logoUrl: "",
+        };
+
+        try {
+          const pdfBuffer = await generateInvoicePdf(dummyInvoice, {
+            code: "USD",
+            symbol: "$",
+            name: "US Dollar",
+          });
+          const pdfBase64 = Buffer.from(pdfBuffer).toString("base64");
+
+          const emailResult = await sendInvoiceEmail({
+            to: customerEmail,
+            invoiceNumber: OrderId,
+            customerName: customerEmail.split("@")[0],
+            amount,
+            currency: "$",
+            pdfBase64,
+          });
+
+          if (!emailResult.success) {
+            console.error(`[paymento-webhook] Email failed for ${customerEmail}:`, emailResult.error);
+          }
+        } catch (emailErr) {
+          // Don't fail the webhook if email fails — payment is already confirmed
+          console.error("[paymento-webhook] Email error:", emailErr);
+        }
+      }
     }
 
     return new NextResponse("OK", { status: 200 });
