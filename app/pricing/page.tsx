@@ -150,12 +150,30 @@ export default function PricingPage() {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className="relative h-9 w-16 rounded-full transition-colors duration-300"
-            style={{ backgroundColor: isAnnual ? '#10b981' : '#6b7280' }}
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              width: '44px',
+              height: '24px',
+              borderRadius: '12px',
+              backgroundColor: isAnnual ? '#10b981' : '#6b7280',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+              padding: 0
+            }}
           >
             <span
-              className="absolute top-1 h-7 w-7 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out"
-              style={{ transform: isAnnual ? 'translateX(24px)' : 'translateX(4px)' }}
+              style={{
+                position: 'absolute',
+                left: isAnnual ? '22px' : '2px',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                transition: 'left 0.2s'
+              }}
             />
           </button>
           <span className={`text-sm font-medium transition-colors ${isAnnual ? "text-slate-900" : "text-slate-400"}`}>
