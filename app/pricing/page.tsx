@@ -178,6 +178,9 @@ export default function PricingPage() {
           </button>
           <span className={`text-sm font-medium transition-colors ${isAnnual ? "text-slate-900" : "text-slate-400"}`}>
             Annual
+            <span className={`ml-1.5 text-xs font-medium ${isAnnual ? "text-emerald-600" : "text-slate-400"}`}>
+              {isAnnual ? "Save up to 30%" : ""}
+            </span>
           </span>
         </div>
 
