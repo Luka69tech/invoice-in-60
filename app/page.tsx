@@ -382,7 +382,7 @@ export default function HomePage() {
                     </span>
                   </div>
                 </div>
-                <div className="grid lg:grid-cols-2">
+                <div className="grid lg:grid-cols-2 aspect-video">
                   {/* Form side */}
                   <div className="border-r border-slate-100/60 p-8">
                     <div className="mb-6 h-2 w-28 rounded-full bg-sky-100" />
